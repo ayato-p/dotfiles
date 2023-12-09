@@ -1,0 +1,78 @@
+{
+  "calva.prettyPrintingOptions": {
+    "printEngine": "pprint",
+    "enabled": true,
+    "width": 120,
+    "maxLength": 50
+  },
+  "calva.paredit.defaultKeyMap": "strict",
+  "redhat.telemetry.enabled": true,
+  "[clojure]": {
+    "editor.autoClosingBrackets": "always",
+    "editor.autoClosingOvertype": "always",
+    "editor.formatOnPaste": true,
+    "editor.parameterHints.enabled": false
+  },
+  "yaml.format.enable": false,
+  "editor.minimap.enabled": false,
+  "diffEditor.ignoreTrimWhitespace": false,
+  "editor.formatOnSave": false,
+  "workbench.editor.enablePreview": false,
+  "FSharp.dotnetRoot": "/home/ayato-p/.dotnet",
+  "notebook.breadcrumbs.showCodeCells": false,
+  "git.suggestSmartCommit": false,
+  "FSharp.suggestGitignore": false,
+  "vs-kubernetes": {
+    "vscode-kubernetes.minikube-path.linux": "/home/ayato-p/.local/state/vs-kubernetes/tools/minikube/linux-amd64/minikube"
+  },
+  "workbench.colorTheme": "Zenburn",
+  "emmet.triggerExpansionOnTab": true,
+  "vscode_custom_css.imports": [
+    "file:///home/ayato-p/.vscode/extensions/brandonkirbyson.vscode-animations-1.0.7/dist/updateHandler.js"
+  ],
+  "[json]": {
+    "editor.defaultFormatter": "vscode.json-language-features"
+  },
+  "editor.inlayHints.enabled": "off",
+  "workbench.colorCustomizations": {
+    "editor.lineHighlightBackground": "#1073cf2d",
+    "editor.lineHighlightBorder": "#9fced11f"
+  },
+  "editor.wordWrap": "off",
+  "diffEditor.wordWrap": "off",
+  "editor.guides.indentation": false,
+  "editor.guides.bracketPairs": false,
+  "indentRainbow.indicatorStyle": "light",
+  "indentRainbow.lightIndicatorStyleLineWidth": 2,
+  "indentRainbow.ignoreErrorLanguages": [
+    "clojure",
+    "markdown",
+    "fsharp",
+    "typescript"
+  ],
+  "[nginx]": {
+    "editor.defaultFormatter": "raynigon.nginx-formatter"
+  },
+  "[typescript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[html]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[rust]": {
+    "editor.formatOnSave": true
+  },
+  "dotnet.preferRuntimeFromSDK": true,
+  "files.watcherExclude": {
+    "**/.bloop": true,
+    "**/.metals": true,
+    "**/.ammonite": true
+  },
+  "git.autofetch": true,
+  "workbench.editorAssociations": {
+    "*.pdf": "default"
+  },
+  "git.openRepositoryInParentFolders": "always",
+  "dart.sdkPath": "/home/ayato-p/.asdf/installs/dart/2.19.6/dart-sdk",
+  "window.zoomLevel": 1
+}
