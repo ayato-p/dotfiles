@@ -6,13 +6,14 @@ github:
     command:
       build:
         steps:
-          - ./install --bin --no-update-rc 
+          - ./install --bin --no-update-rc
       link:
-      - from: 'bin/fzf'
-      - from: 'bin/fzf-tmux'
+        - from: "bin/fzf"
+        - from: "bin/fzf-tmux"
     plugin:
       sources:
-      - shell/completion.bash
+        - shell/completion.bash
+        - shell/key-bindings.bash
       env:
         FZF_DEFAULT_COMMAND: fd --type f
         FZF_DEFAULT_OPTS: >
