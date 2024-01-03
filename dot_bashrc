@@ -119,12 +119,32 @@ fi
 # user local binary
 export PATH="$HOME/bin:$PATH"
 
+# fzf
+source /usr/share/doc/fzf/examples/key-bindings.bash
+
+# Alacritty
+source $HOME/.bash_completion/alacritty
+
+
 # JetBrains Toolbox
 export PATH="$HOME/.local/share/JetBrains/Toolbox/bin:$PATH"
 
 # asdf
 . $HOME/.asdf/asdf.sh
 . $HOME/.asdf/completions/asdf.bash
+
+# Kubernetes
+source <(kubectl completion bash)
+source <(skaffold completion bash)
+source <(k3d completion bash)
+source <(helm completion bash)
+alias k=kubectl
+source $HOME/opt/kube-ps1/kube-ps1.sh
+export PATH="${KREW_ROOT:-$HOME/.krew}/bin:$PATH"
+
+# SDKMAN! (JVM languages)
+export SDKMAN_DIR="/home/ayato-p/.sdkman"
+[[ -s "/home/ayato-p/.sdkman/bin/sdkman-init.sh" ]] && source "/home/ayato-p/.sdkman/bin/sdkman-init.sh"
 
 # .NET Core
 export DOTNET_ROOT="$HOME/.dotnet"
@@ -140,23 +160,11 @@ export CLOUDSDK_PYTHON=$(asdf which python)
 # Go 
 export PATH="$HOME/bin/go/bin:$PATH"
 export GOPATH=$HOME/go
-#THIS MUST BE AT THE END OF THE FILE FOR SDKMAN TO WORK!!!
-export SDKMAN_DIR="/home/ayato-p/.sdkman"
-[[ -s "/home/ayato-p/.sdkman/bin/sdkman-init.sh" ]] && source "/home/ayato-p/.sdkman/bin/sdkman-init.sh"
 
-source <(skaffold completion bash)
-source <(k3d completion bash)
-source <(helm completion bash)
 
-source /usr/share/doc/fzf/examples/key-bindings.bash
-source $HOME/.bash_completion/alacritty
-
+# Some aliases
 alias gdiff='git add -A && git diff --cached > ~/tmp/diff_`date +%Y_%m_%d_%H%M%S`.patch && echo "Created: ~/tmp/diff_`date +%Y_%m_%d_%H%M%S`.patch" && git restore --staged $(git rev-parse --show-toplevel)'
 
-# k8s tools 
-alias k=kubectl
-source $HOME/opt/kube-ps1/kube-ps1.sh
-export PATH="${KREW_ROOT:-$HOME/.krew}/bin:$PATH"
-
+# Prompt
 export PROMPT_DIRTRIM=2
 PS1='$(kube_ps1)[\w]\n[\u@\h]: '

@@ -73,6 +73,5 @@
     "*.pdf": "default"
   },
   "git.openRepositoryInParentFolders": "always",
-  "dart.sdkPath": "/home/ayato-p/.asdf/installs/dart/2.19.6/dart-sdk",
-  "window.zoomLevel": 1
+  "dart.sdkPath": "/home/ayato-p/.asdf/installs/dart/2.19.6/dart-sdk"
 }
