@@ -1,0 +1,23 @@
+github:
+  - name: sharkdp/bat
+    description: A cat(1) clone with wings.
+    owner: sharkdp
+    repo: bat
+    release:
+      name: bat
+      tag: v0.24.0
+    command:
+      link:
+        - from: "**/bat"
+      snippet: |
+        bat-theme() {
+          local file=$1
+          if [[ -z $file ]]; then
+            file=$(fzf)
+          fi
+          bat --list-themes | fzf --preview="bat --theme={} --color=always ${file}"
+        }
+      env:
+        BAT_PAGER: less -RF
+        BAT_STYLE: numbers,changes
+        BAT_THEME: Dracula

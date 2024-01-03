@@ -1,0 +1,11 @@
+github:
+  - name: sharkdp/fd
+    description: A simple, fast and user-friendly alternative to 'find'
+    owner: sharkdp
+    repo: fd
+    release:
+      name: fd
+      tag: v9.0.0
+    command:
+      link:
+        - from: '**/fd'

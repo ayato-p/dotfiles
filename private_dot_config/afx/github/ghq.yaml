@@ -1,0 +1,16 @@
+github:
+  - name: x-motemen/ghq
+    description: Remote repository management made easy
+    owner: x-motemen
+    repo: ghq
+    release:
+      name: ghq
+      tag: v1.4.2
+      asset:
+        filename: ghq_{{ .OS }}_{{ .Arch }}.zip
+    command:
+      env:
+        GHQ_ROOT: $HOME/workspace
+      link:
+        - from: '**/ghq'
+          to: ghq

@@ -1,0 +1,14 @@
+github:
+  - name: github/cli
+    description: GitHub’s official command line tool
+    owner: cli
+    repo: cli
+    release:
+      name: cli
+      tag: v2.40.1
+      asset:
+        filename: gh_2.40.1_{{ .OS }}_{{ .Arch }}.tar.gz
+    command:
+      link:
+        - from: '**/bin/gh'
+          to: gh

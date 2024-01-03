@@ -1,0 +1,12 @@
+github:
+  - name: jqlang/jq
+    description: Command-line JSON processor
+    owner: jqlang
+    repo: jq
+    release: 
+      name: jq
+      tag: jq-1.7.1
+    command:
+      link:
+        - from: '*jq*'
+          to: jq

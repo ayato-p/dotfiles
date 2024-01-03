@@ -1,0 +1,15 @@
+github:
+  - name: babarot/enhancd
+    description: A next-generation cd command with your interactive filter
+    owner: babarot
+    repo: enhancd
+    plugin:
+      env:
+        ENHANCD_FILTER: >
+          fzf --preview 'exa -al --tree --level 1 --group-directories-first --git-ignore
+          --header --git --no-user --no-time --no-filesize --no-permissions {}'
+          --preview-window right,50% --height 35% --reverse --ansi
+          :fzy
+          :peco
+      sources:
+        - init.sh

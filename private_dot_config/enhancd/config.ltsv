@@ -1,0 +1,3 @@
+short:-G	long:--ghq	desc:Show ghq path	func:ghq list --full-path	condition:which ghq
+short:-g	long:--git	desc:Show dirs managed by Git	func:git rev-parse --show-toplevel; fd -d 2 --type directory --hidden --exclude .git --search-path $(git rev-parse --show-toplevel) --exec realpath --relative-to=. {} | grep -v '^\.$' | sort	condition:which fd && which realpath && git rev-parse --is-inside-work-tree
+short:-x	long:	desc:Show favorite dirs	func:cat ~/.config/enhancd/*.fav | sort | uniq | xargs -I% sh -c 'echo %'	condition:

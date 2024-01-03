@@ -1,0 +1,12 @@
+github:
+  - name: ogham/exa
+    description: A modern replacement for ‘ls’.
+    owner: ogham
+    repo: exa
+    release: 
+      name: exa
+      tag: v0.10.1
+    command:
+      link:
+        - from: 'bin/exa'
+          to: exa

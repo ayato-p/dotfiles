@@ -119,8 +119,11 @@ fi
 # user local binary
 export PATH="$HOME/bin:$PATH"
 
+# CLI Package manager / Enabling packages
+source <(afx init)
+
 # fzf
-source /usr/share/doc/fzf/examples/key-bindings.bash
+# source /usr/share/doc/fzf/examples/key-bindings.bash
 
 # Alacritty
 source $HOME/.bash_completion/alacritty
