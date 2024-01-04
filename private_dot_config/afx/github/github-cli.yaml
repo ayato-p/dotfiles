@@ -10,5 +10,7 @@ github:
         filename: gh_2.40.1_{{ .OS }}_{{ .Arch }}.tar.gz
     command:
       link:
-        - from: '**/bin/gh'
+        - from: "**/bin/gh"
           to: gh
+      snippet: |
+        source <(gh completion -s bash)
