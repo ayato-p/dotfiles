@@ -133,10 +133,6 @@ source $HOME/.bash_completion/alacritty
 # JetBrains Toolbox
 export PATH="$HOME/.local/share/JetBrains/Toolbox/bin:$PATH"
 
-# asdf
-. $HOME/.asdf/asdf.sh
-. $HOME/.asdf/completions/asdf.bash
-
 # Kubernetes
 source <(kubectl completion bash)
 source <(skaffold completion bash)
