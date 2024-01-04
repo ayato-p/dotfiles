@@ -1,0 +1,14 @@
+http:
+  - name: gcloud
+    description: Google Cloud CLI
+    url: https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/google-cloud-cli-457.0.0-linux-x86_64.tar.gz
+    command:
+      build:
+        steps:
+          - ./google-cloud-sdk/install.sh --quiet
+      link:
+        - from: google-cloud-sdk/bin/gcloud
+          to: gcloud
+    plugin:
+      sources:
+        - google-cloud-sdk/*.bash.inc
