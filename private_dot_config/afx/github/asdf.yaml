@@ -1,9 +1,0 @@
-github:
-  - name: asdf-vm/asdf
-    description: Extendable version manager with support for Ruby, Node.js, Elixir, Erlang & more
-    owner: asdf-vm
-    repo: asdf
-    plugin:
-      sources:
-        - asdf.sh
-        - completions/asdf.bash

@@ -6,5 +6,8 @@ http:
       link: 
         - from: mise-latest-linux-x64
           to: mise
+      env:
+        PATH: $HOME/.local/share/mise/shims:$PATH
       snippet: |
+        eval "$(mise activate bash)"
         source <(mise completion bash)
