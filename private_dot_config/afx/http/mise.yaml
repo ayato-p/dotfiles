@@ -1,0 +1,10 @@
+http: 
+  - name: mise
+    description: dev tools, env vars, task runner
+    url: https://mise.jdx.dev/mise-latest-linux-x64
+    command: 
+      link: 
+        - from: mise-latest-linux-x64
+          to: mise
+      snippet: |
+        source <(mise completion bash)
