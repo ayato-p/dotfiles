@@ -146,10 +146,6 @@ alias k=kubectl
 source $HOME/opt/kube-ps1/kube-ps1.sh
 export PATH="${KREW_ROOT:-$HOME/.krew}/bin:$PATH"
 
-# SDKMAN! (JVM languages)
-export SDKMAN_DIR="/home/ayato-p/.sdkman"
-[[ -s "/home/ayato-p/.sdkman/bin/sdkman-init.sh" ]] && source "/home/ayato-p/.sdkman/bin/sdkman-init.sh"
-
 # .NET Core
 export DOTNET_ROOT="$HOME/.dotnet"
 export PATH="$HOME/.dotnet:$PATH"

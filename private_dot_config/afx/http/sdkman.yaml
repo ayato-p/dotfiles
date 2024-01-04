@@ -1,0 +1,14 @@
+http:
+  - name: sdkman
+    description: The SDKMAN! Command Line Interface
+    url: https://get.sdkman.io
+    command: 
+      build:
+        steps:
+          - bash get.sdkman.io
+      link:
+        - from: get.sdkman.io
+          to: sdkamn-installer 
+    plugin:
+      sources: 
+        - ~/.sdkman/bin/sdkman-init.sh
