@@ -129,9 +129,6 @@ source <(chezmoi completion bash)
 # Alacritty
 source $HOME/.bash_completion/alacritty
 
-# JetBrains Toolbox
-export PATH="$HOME/.local/share/JetBrains/Toolbox/bin:$PATH"
-
 # Kubernetes
 source <(skaffold completion bash)
 source <(k3d completion bash)
