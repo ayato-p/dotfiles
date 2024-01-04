@@ -1,0 +1,1 @@
+alias gdiff='git add -A && git diff --cached > ~/tmp/diff_`date +%Y_%m_%d_%H%M%S`.patch && echo "Created: ~/tmp/diff_`date +%Y_%m_%d_%H%M%S`.patch" && git restore --staged $(git rev-parse --show-toplevel)'

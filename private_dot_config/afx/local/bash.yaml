@@ -1,0 +1,7 @@
+local:
+  - name: bash
+    description: My bash scripts
+    directory: ~/.bash
+    plugin:
+      sources:
+        - "*.bash"

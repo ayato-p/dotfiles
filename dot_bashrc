@@ -142,7 +142,6 @@ source <(kubectl completion bash)
 source <(skaffold completion bash)
 source <(k3d completion bash)
 source <(helm completion bash)
-alias k=kubectl
 source $HOME/opt/kube-ps1/kube-ps1.sh
 export PATH="${KREW_ROOT:-$HOME/.krew}/bin:$PATH"
 
@@ -155,11 +154,3 @@ export CLOUDSDK_PYTHON=$(asdf which python)
 # Go 
 export PATH="$HOME/bin/go/bin:$PATH"
 export GOPATH=$HOME/go
-
-
-# Some aliases
-alias gdiff='git add -A && git diff --cached > ~/tmp/diff_`date +%Y_%m_%d_%H%M%S`.patch && echo "Created: ~/tmp/diff_`date +%Y_%m_%d_%H%M%S`.patch" && git restore --staged $(git rev-parse --show-toplevel)'
-
-# Prompt
-export PROMPT_DIRTRIM=2
-PS1='$(kube_ps1)[\w]\n[\u@\h]: '
