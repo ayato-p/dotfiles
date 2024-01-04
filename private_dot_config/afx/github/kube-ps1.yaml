@@ -1,0 +1,11 @@
+github:
+  - name: jonmosco/kube-ps1
+    description: Kubernetes prompt info for bash and zsh
+    owner: jonmosco
+    repo: kube-ps1
+    plugin:
+      sources: 
+        - kube-ps1.sh
+      snippet: |
+        export PROMPT_DIRTRIM=2
+        PS1='$(kube_ps1)[\w]\n[\u@\h]: '

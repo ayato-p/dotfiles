@@ -136,7 +136,6 @@ export PATH="$HOME/.local/share/JetBrains/Toolbox/bin:$PATH"
 source <(skaffold completion bash)
 source <(k3d completion bash)
 source <(helm completion bash)
-source $HOME/opt/kube-ps1/kube-ps1.sh
 
 # Dart
 export PATH="$PATH":"$HOME/.pub-cache/bin"

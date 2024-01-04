@@ -5,7 +5,8 @@ http:
     command:
       build:
         steps:
-          -  ./krew-linux_amd64 install krew
+          - ./krew-linux_amd64 install krew
+          - ./krew-linux_amd64 install iexec neat open-svc prompt resource-capacity status stern view-secret ctx ns
       link:
         - from: krew-linux_amd64
           to: krew
