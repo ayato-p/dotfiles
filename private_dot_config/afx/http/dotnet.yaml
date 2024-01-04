@@ -1,0 +1,10 @@
+http:
+  - name: dotnet
+    description: .NET Core SDK installer
+    url: https://dot.net/v1/dotnet-install.sh
+    command: 
+      link:
+        - from: dotnet-install.sh
+      env: 
+        DOTNET_ROOT: $HOME/.dotnet
+        PATH: $PATH:$DOTNET_ROOT:$DOTNET_ROOT/tools

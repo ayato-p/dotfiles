@@ -146,11 +146,6 @@ alias k=kubectl
 source $HOME/opt/kube-ps1/kube-ps1.sh
 export PATH="${KREW_ROOT:-$HOME/.krew}/bin:$PATH"
 
-# .NET Core
-export DOTNET_ROOT="$HOME/.dotnet"
-export PATH="$HOME/.dotnet:$PATH"
-
-
 # Dart
 export PATH="$PATH":"$HOME/.pub-cache/bin"
 
