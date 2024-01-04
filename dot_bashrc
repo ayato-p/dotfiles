@@ -133,18 +133,13 @@ source $HOME/.bash_completion/alacritty
 export PATH="$HOME/.local/share/JetBrains/Toolbox/bin:$PATH"
 
 # Kubernetes
-source <(kubectl completion bash)
 source <(skaffold completion bash)
 source <(k3d completion bash)
 source <(helm completion bash)
 source $HOME/opt/kube-ps1/kube-ps1.sh
-export PATH="${KREW_ROOT:-$HOME/.krew}/bin:$PATH"
 
 # Dart
 export PATH="$PATH":"$HOME/.pub-cache/bin"
-
-# Cloud SDK
-export CLOUDSDK_PYTHON=$(mise which python)
 
 # Go 
 export PATH="$HOME/bin/go/bin:$PATH"
