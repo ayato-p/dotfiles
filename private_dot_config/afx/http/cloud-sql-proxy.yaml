@@ -1,0 +1,8 @@
+http:
+  - name: cloud-sql-proxy
+    description: Cloud SQL Proxy
+    url: https://storage.googleapis.com/cloud-sql-connectors/cloud-sql-proxy/v2.6.1/cloud-sql-proxy.linux.amd64
+    command:
+      link: 
+        - from: cloud-sql-proxy.linux.amd64
+          to: cloud-sql-proxy

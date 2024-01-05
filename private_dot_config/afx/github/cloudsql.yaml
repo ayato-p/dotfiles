@@ -1,0 +1,11 @@
+github:
+  - name: s-okayama/cloudsql
+    description: Cloud SQL Proxy wrapper 
+    owner: s-okayama
+    repo: cloudsql
+    release:
+      name: cloudsql
+      tag: v2.0.2
+    command:
+      link:
+        - from: cloudsql

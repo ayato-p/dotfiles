@@ -5,5 +5,3 @@ local:
     plugin:
       sources:
         - "*.bash"
-    depends-on:
-      - mise
