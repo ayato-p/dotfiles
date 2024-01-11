@@ -18,7 +18,7 @@ github:
         FZF_DEFAULT_COMMAND: fd --type f
         FZF_DEFAULT_OPTS: >
           --height 75% --multi --reverse --margin=0,1
-          --bind ctrl-v:page-down,alt-v:page-up,ctrl-/:toggle-preview
+          --bind ctrl-v:page-down,alt-v:page-up,ctrl-/:toggle-preview,ctrl-k:kill-line
           --marker="+" --pointer="▶" --prompt="❯ "
           --no-separator --scrollbar=1
           --color bg+:#262626,fg+:#dadada,hl:#f09479,hl+:#f09479
