@@ -1,0 +1,11 @@
+github: 
+  - name: dandavison/delta
+    description: A syntax-highlighter for git and diff output
+    owner: dandavison
+    repo: delta
+    release:
+      name: delta
+      tag: 0.16.5
+    command:
+      link:
+        - from: '**/delta'

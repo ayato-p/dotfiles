@@ -1,0 +1,19 @@
+github:
+  - name: jdx/mise
+    description: dev tools, env vars, task runner
+    owner: jdx
+    repo: mise
+    release:
+      name: mise
+      tag: v2024.2.18
+      asset:
+        filename: mise-v2024.2.18-linux-x64.tar.gz
+    command:
+      link:
+        - from: mise/bin/mise
+          to: mise
+      env:
+        PATH: $HOME/.local/share/mise/shims:$PATH
+      snippet: |
+        eval "$(mise activate bash)"
+        source <(mise completion bash)
