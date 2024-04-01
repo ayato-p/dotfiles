@@ -11,6 +11,6 @@ http:
         - from: krew-linux_amd64
           to: krew
       env: 
-        PATH: "${KREW_ROOT:-$HOME/.krew}/bin:$PATH"
+        PATH: "${KREW_ROOT:-$HOME/.krew}/bin"
     depends-on:
       - kubectl

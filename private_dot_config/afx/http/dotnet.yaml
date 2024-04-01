@@ -7,4 +7,4 @@ http:
         - from: dotnet-install.sh
       env: 
         DOTNET_ROOT: $HOME/.dotnet
-        PATH: $PATH:$DOTNET_ROOT:$DOTNET_ROOT/tools
+        PATH: $DOTNET_ROOT:$DOTNET_ROOT/tools
