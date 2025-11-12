@@ -1,0 +1,13 @@
+http:
+  - name: starship
+    description: The cross-shell prompt for astronauts
+    url: https://starship.rs/install.sh
+    command:
+      build:
+        steps: 
+          - sh install.sh
+      link:
+        - from: install.sh
+        - to: starship
+      snippet: |
+        eval "$(starship init bash)"

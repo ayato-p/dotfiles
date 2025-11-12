@@ -137,8 +137,11 @@ source <(helm completion bash)
 # Dart
 export PATH="$PATH":"$HOME/.pub-cache/bin"
 
-# Go 
+# Go
 # export PATH="$HOME/bin/go/bin:$PATH"
 # export GOPATH=$HOME/go
 
 # eval "$(mise activate bash)"
+alias claude="/home/ayato-p/.claude/local/claude"
+
+eval "$(direnv hook bash)"

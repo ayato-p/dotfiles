@@ -1,0 +1,14 @@
+github:
+  - name: typst/typst
+    description: A new markup-based typesetting system that is powerful and easy to learn.
+    owner: typst
+    repo: typst
+    release:
+      name: typst
+      tag: v0.13.1
+      asset:
+        filename: typst-x86_64-unknown-linux-musl.tar.xz
+    command:
+      link:
+        - from: '**/typst'
+          to: typst

@@ -1,77 +1,113 @@
 {
+  "editor.cursorStyle": "line",
+  "editor.cursorWidth": 10,
+  "FSharp.dotnetRoot": "/home/ayato-p/.dotnet",
+  "FSharp.suggestGitignore": false,
+  "[clojure]": {
+    "editor.autoClosingBrackets": "always",
+    "editor.autoClosingOvertype": "always",
+    "editor.formatOnPaste": true,
+    "editor.formatOnSave": true,
+    "editor.parameterHints.enabled": false
+  },
+  "[css]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[html]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[javascript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[json]": {
+    "editor.defaultFormatter": "vscode.json-language-features"
+  },
+  "[jsonc]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[nginx]": {
+    "editor.defaultFormatter": "raynigon.nginx-formatter"
+  },
+  "[rust]": {
+    "editor.formatOnSave": true
+  },
+  "[typescript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "calva.paredit.defaultKeyMap": "strict",
   "calva.prettyPrintingOptions": {
     "printEngine": "pprint",
     "enabled": true,
     "width": 120,
     "maxLength": 50
   },
-  "calva.paredit.defaultKeyMap": "strict",
-  "redhat.telemetry.enabled": true,
-  "[clojure]": {
-    "editor.autoClosingBrackets": "always",
-    "editor.autoClosingOvertype": "always",
-    "editor.formatOnPaste": true,
-    "editor.parameterHints.enabled": false
-  },
-  "yaml.format.enable": false,
-  "editor.minimap.enabled": false,
+  "dart.sdkPath": "/home/ayato-p/.asdf/installs/dart/2.19.6/dart-sdk",
   "diffEditor.ignoreTrimWhitespace": false,
-  "editor.formatOnSave": false,
-  "workbench.editor.enablePreview": false,
-  "FSharp.dotnetRoot": "/home/ayato-p/.dotnet",
-  "notebook.breadcrumbs.showCodeCells": false,
-  "git.suggestSmartCommit": false,
-  "FSharp.suggestGitignore": false,
-  "vs-kubernetes": {
-    "vscode-kubernetes.minikube-path.linux": "/home/ayato-p/.local/state/vs-kubernetes/tools/minikube/linux-amd64/minikube"
-  },
-  "workbench.colorTheme": "Zenburn",
-  "emmet.triggerExpansionOnTab": true,
-  "vscode_custom_css.imports": [
-    "file:///home/ayato-p/.vscode/extensions/brandonkirbyson.vscode-animations-1.0.7/dist/updateHandler.js"
-  ],
-  "[json]": {
-    "editor.defaultFormatter": "vscode.json-language-features"
-  },
-  "editor.inlayHints.enabled": "off",
-  "workbench.colorCustomizations": {
-    "editor.lineHighlightBackground": "#1073cf2d",
-    "editor.lineHighlightBorder": "#9fced11f"
-  },
-  "editor.wordWrap": "off",
   "diffEditor.wordWrap": "off",
-  "editor.guides.indentation": false,
+  "editor.cursorBlinking": "phase",
+  "editor.cursorSmoothCaretAnimation": "explicit",
+  "editor.formatOnSave": false,
   "editor.guides.bracketPairs": false,
-  "indentRainbow.indicatorStyle": "light",
-  "indentRainbow.lightIndicatorStyleLineWidth": 2,
+  "editor.guides.indentation": false,
+  "editor.inlayHints.enabled": "off",
+  "editor.minimap.enabled": false,
+  "editor.renderLineHighlight": "all",
+  "editor.renderLineHighlightOnlyWhenFocus": true,
+  "editor.wordWrap": "off",
+  "emmet.triggerExpansionOnTab": true,
+  "files.trimTrailingWhitespace": true,
+  "files.watcherExclude": {
+    "**/.ammonite": true,
+    "**/.bloop": true,
+    "**/.metals": true
+  },
+  "git.autofetch": true,
+  "git.openRepositoryInParentFolders": "always",
+  "git.suggestSmartCommit": false,
   "indentRainbow.ignoreErrorLanguages": [
     "clojure",
     "markdown",
     "fsharp",
     "typescript"
   ],
-  "[nginx]": {
-    "editor.defaultFormatter": "raynigon.nginx-formatter"
+  "indentRainbow.indicatorStyle": "light",
+  "indentRainbow.lightIndicatorStyleLineWidth": 2,
+  "notebook.breadcrumbs.showCodeCells": false,
+  "redhat.telemetry.enabled": true,
+  "vs-kubernetes": {
+    "vscode-kubernetes.minikube-path.linux": "/home/ayato-p/.local/state/vs-kubernetes/tools/minikube/linux-amd64/minikube"
   },
-  "[typescript]": {
-    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  "vscode_custom_css.imports": [
+    "file:///home/ayato-p/.vscode/extensions/brandonkirbyson.vscode-animations-1.0.7/dist/updateHandler.js"
+  ],
+  "window.commandCenter": false,
+  "window.menuBarVisibility": "toggle",
+  "window.title": " ",
+  "workbench.colorCustomizations": {
+    "editor.lineHighlightBackground": "#1073cf2d",
+    "editor.lineHighlightBorder": "#9fced11f"
   },
-  "[html]": {
-    "editor.defaultFormatter": "esbenp.prettier-vscode"
-  },
-  "[rust]": {
-    "editor.formatOnSave": true
-  },
-  "dotnet.preferRuntimeFromSDK": true,
-  "files.watcherExclude": {
-    "**/.bloop": true,
-    "**/.metals": true,
-    "**/.ammonite": true
-  },
-  "git.autofetch": true,
+  "workbench.colorTheme": "Default Light Modern",
+  "workbench.editor.enablePreview": false,
   "workbench.editorAssociations": {
     "*.pdf": "default"
   },
-  "git.openRepositoryInParentFolders": "always",
-  "dart.sdkPath": "/home/ayato-p/.asdf/installs/dart/2.19.6/dart-sdk"
+  "workbench.iconTheme": "catppuccin-mocha",
+  "workbench.layoutControl.enabled": false,
+  "workbench.productIconTheme": "jetbrains-idea-product-icon-theme",
+  "workbench.tree.indent": 24,
+  "yaml.format.enable": false,
+  "vscode-pets.petSize": "medium",
+  "vscode-pets.theme": "forest",
+  "github.copilot.enable": {
+    "*": true,
+    "plaintext": false,
+    "markdown": false,
+    "scminput": false,
+    "clojure": false
+  }
+  ,
+  "rest-client.streaming": true,
+  "security.workspace.trust.untrustedFiles": "open",
+  "clojure.trace.server": "verbose"
 }

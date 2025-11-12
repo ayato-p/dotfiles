@@ -5,7 +5,9 @@ github:
     repo: cloudsql
     release:
       name: cloudsql
-      tag: v2.0.2
+      tag: v2.1.0
+      asset:
+        filename: cloudsql_2.1.0_Linux_64bit.tar.gz
     command:
       link:
         - from: cloudsql

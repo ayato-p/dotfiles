@@ -1,0 +1,12 @@
+github:
+  - name: altsem/gitu
+    description: A TUI Git client inspired by Magit
+    owner: altsem
+    repo: gitu
+    release:
+      name: gitu
+      tag: v0.12.1
+    command:
+      link:
+        - from: '**/gitu'
+          # to: gitu
