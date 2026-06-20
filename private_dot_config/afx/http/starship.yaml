@@ -8,5 +8,6 @@ http:
           - sh install.sh -y --bin-dir ./
       link:
         - from: starship
-      snippet: |
+      snippet: |+
         eval "$(starship init bash)"
+

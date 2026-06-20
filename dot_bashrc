@@ -143,4 +143,4 @@ export PATH="$PATH":"$HOME/.pub-cache/bin"
 # eval "$(mise activate bash)"
 alias claude="/home/ayato-p/.claude/local/claude"
 
-eval "$(direnv hook bash)"
+# eval "$(direnv hook bash)"
