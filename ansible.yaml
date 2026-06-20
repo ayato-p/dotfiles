@@ -158,6 +158,56 @@
         dest: /usr/local/bin
         remote_src: true
 
+    - name: Dockerを導入
+      ansible.builtin.apt:
+        name: docker.io
+        state: present
+
+    - name: 対象ユーザーをdockerグループに追加(sudo不要でdockerコマンドを実行するため)
+      ansible.builtin.user:
+        name: "{{ target_user }}"
+        groups: docker
+        append: true
+
+    - name: Dockerのデータルートディレクトリを作成
+      ansible.builtin.file:
+        path: "{{ target_home }}/.docker-data"
+        state: directory
+        owner: root
+        group: root
+        mode: "0710"
+
+    - name: Dockerのデータルートを/homeに変更(デフォルトの/var/lib/dockerはルートパーティションを圧迫するため)
+      # /home が別パーティション・大容量ストレージに割り当てられている環境では、
+      # イメージやコンテナのデータを /home/docker に置くことで
+      # ルートパーティションの容量逼迫を防ぐ。
+      ansible.builtin.copy:
+        dest: /etc/docker/daemon.json
+        owner: root
+        group: root
+        mode: "0644"
+        content: |
+          {
+            "data-root": "{{ target_home }}/.docker-data"
+          }
+      notify: restart docker
+
+    - name: Dockerサービスを有効化
+      ansible.builtin.systemd:
+        name: docker
+        enabled: true
+        state: started
+
+    - name: Google Chromeをダウンロードしてインストール
+      # Google公式の安定版debパッケージを直接取得する。
+      # aptリポジトリを追加する方法もあるが、個人マシン1台の用途では
+      # debパッケージ直接インストールのほうがシンプル。
+      # Chrome自身がインストール時に自動更新用リポジトリを登録するため、
+      # 以降のアップデートはaptで自動的に行われる。
+      ansible.builtin.apt:
+        deb: https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
+        state: present
+
     - name: SDDMを導入
       ansible.builtin.apt:
         name: sddm
@@ -392,3 +442,8 @@
 
     - name: reconfigure keyboard
       ansible.builtin.command: dpkg-reconfigure -f noninteractive keyboard-configuration
+
+    - name: restart docker
+      ansible.builtin.systemd:
+        name: docker
+        state: restarted
