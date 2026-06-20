@@ -306,9 +306,11 @@
         name: fonts-ibm-plex
         state: present
 
-    - name: zip展開用にunzipを導入
+    - name: zip/unzipを導入
       ansible.builtin.apt:
-        name: unzip
+        name:
+          - zip
+          - unzip
         state: present
 
     - name: IBM Plex Sans JPのリリース一覧を取得
