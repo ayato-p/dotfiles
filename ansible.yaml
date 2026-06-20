@@ -80,6 +80,25 @@
         name: network-manager
         state: present
 
+    - name: netplanのレンダラーをNetworkManagerに切り替える
+      # NetworkManagerを入れて起動するだけでは不十分で、実際にどのデーモンが
+      # インターフェースを管理するかはnetplanのrendererで決まる。最小構成や
+      # Server系インストールでは既定が systemd-networkd のため、明示的に
+      # NetworkManager をrendererに指定しないと両者が競合し、NMが
+      # インターフェースを掴めない(Plasma上のネットワーク管理UIにも出ない)。
+      # 既存のnetplan定義より後勝ちさせるためファイル名を 99- にしている。
+      # mode 0600 は netplan の "permissions too open" 警告を避けるため。
+      ansible.builtin.copy:
+        dest: /etc/netplan/99-network-manager.yaml
+        owner: root
+        group: root
+        mode: "0600"
+        content: |
+          network:
+            version: 2
+            renderer: NetworkManager
+      notify: apply netplan
+
     - name: NetworkManagerサービスを有効化
       ansible.builtin.systemd:
         name: NetworkManager
@@ -329,6 +348,10 @@
           追加アプリは最小構成のため未導入(意図的)。
 
   handlers:
+    - name: apply netplan
+      ansible.builtin.command: netplan apply
+      changed_when: true
+
     - name: dpkg-reconfigure sddm
       ansible.builtin.command: dpkg-reconfigure -f noninteractive sddm
 
