@@ -145,3 +145,8 @@ export PATH="$PATH":"$HOME/.pub-cache/bin"
 alias claude="/home/ayato-p/.claude/local/claude"
 
 eval "$(direnv hook bash)"
+# Xan completions
+function __xan {
+    xan compgen "$1" "$2" "$3"
+}
+complete -C __xan -o default xan

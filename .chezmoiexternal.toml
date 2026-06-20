@@ -1,0 +1,12 @@
+# 外部 git リポジトリを自動 clone / 定期 pull する
+# パスは destination (~/) からの相対
+
+[".config/alacritty/themes"]
+    type = "git-repo"
+    url = "https://github.com/alacritty/alacritty-theme.git"
+    refreshPeriod = "168h"
+
+["opt/oh-my-tmux"]
+    type = "git-repo"
+    url = "https://github.com/gpakosz/.tmux.git"
+    refreshPeriod = "168h"
