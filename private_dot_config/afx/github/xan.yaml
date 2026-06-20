@@ -1,0 +1,18 @@
+github:
+  - name: medialab/xan
+    description: The CSV magician
+    owner: medialab
+    repo: xan
+    release:
+      name: xan
+      tag: 0.59.0
+      asset:
+        filename: xan-x86_64-unknown-linux-gnu.tar.gz
+    command:
+      link:
+        - from: '**/xan'
+      snippet: |
+        function __xan {
+            xan compgen "$1" "$2" "$3"
+        }
+        complete -C __xan -o default xan
