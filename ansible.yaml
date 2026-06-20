@@ -138,14 +138,15 @@
       ansible.builtin.uri:
         url: https://api.github.com/repos/b4b4r07/afx/releases/latest
         return_content: true
+        follow_redirects: safe
       register: afx_release
 
     - name: AFXをダウンロード
       ansible.builtin.get_url:
         url: >-
           {{ afx_release.json.assets
-             | selectattr('name', 'search', 'linux')
-             | selectattr('name', 'search', 'amd64')
+             | selectattr('name', 'search', '(?i)linux')
+             | selectattr('name', 'search', 'x86_64')
              | map(attribute='browser_download_url')
              | first }}
         dest: /tmp/afx.tar.gz
