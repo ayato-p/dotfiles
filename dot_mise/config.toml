@@ -1,4 +1,4 @@
-[alias]
+[plugins]
 gauge = "https://github.com/ayato-p/asdf-gauge.git"
 
 [tools]

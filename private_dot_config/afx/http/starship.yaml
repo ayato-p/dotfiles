@@ -4,10 +4,7 @@ http:
     url: https://starship.rs/install.sh
     command:
       build:
-        steps: 
-          - sh install.sh
-      link:
-        - from: install.sh
-        - to: starship
+        steps:
+          - sh install.sh -y --bin-dir ~/bin
       snippet: |
         eval "$(starship init bash)"
