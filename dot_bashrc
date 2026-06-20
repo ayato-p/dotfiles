@@ -131,7 +131,6 @@ source $HOME/.bash_completion/alacritty
 
 # Kubernetes
 source <(skaffold completion bash)
-source <(k3d completion bash)
 source <(helm completion bash)
 
 # Dart
