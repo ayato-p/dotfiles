@@ -1,2 +1,6 @@
-[plugins]
+[alias]
 gauge = "https://github.com/ayato-p/asdf-gauge.git"
+
+[tools]
+deno = "latest"
+psqldef = "3.9.8"
