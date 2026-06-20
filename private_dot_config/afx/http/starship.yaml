@@ -5,6 +5,8 @@ http:
     command:
       build:
         steps:
-          - sh install.sh -y --bin-dir ~/bin
+          - sh install.sh -y --bin-dir ./
+      link:
+        - from: starship
       snippet: |
         eval "$(starship init bash)"
