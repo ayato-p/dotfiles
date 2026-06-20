@@ -174,6 +174,17 @@
           XMODIFIERS=@im=fcitx
           SDL_IM_MODULE=fcitx
 
+    - name: CapsLock を Left Control として扱う (XKBOPTIONS)
+      # システム全体のキーボード設定。/etc/default/keyboard は systemd-localed 経由で
+      # Plasma(Wayland) セッション・SDDMログイン画面・TTY のすべてに効くため、
+      # ユーザー単位(kxkbrc)ではなくここに置いている。
+      # ctrl:nocaps = CapsLock を Ctrl 化し、CapsLock 本来の機能は無効にする。
+      ansible.builtin.lineinfile:
+        path: /etc/default/keyboard
+        regexp: '^XKBOPTIONS='
+        line: 'XKBOPTIONS="ctrl:nocaps"'
+      notify: reconfigure keyboard
+
     - name: 絵文字フォント(Noto Color Emoji)を導入
       # CBDT/CBLC形式でLinux上で広くカラー表示される。Ubuntu公式パッケージの
       # fontconfigルールにより絵文字レンジは自動でこのフォントへフォールバック
@@ -320,3 +331,6 @@
   handlers:
     - name: dpkg-reconfigure sddm
       ansible.builtin.command: dpkg-reconfigure -f noninteractive sddm
+
+    - name: reconfigure keyboard
+      ansible.builtin.command: dpkg-reconfigure -f noninteractive keyboard-configuration
