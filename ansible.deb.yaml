@@ -1,0 +1,527 @@
+---
+# KDE Plasma (Wayland) 最小構成セットアップ (Debian 13 / Trixie 版)
+#
+# このファイルは ansible.yaml (Ubuntu 版) を Debian 13 向けに書き直したもの。
+# 差分の大きい箇所(ネットワーク管理・バージョン判定)以外は Ubuntu 版と同じ。
+#
+# 想定: ansible-pull での実行
+#   sudo ansible-pull -U <このリポジトリのURL> ansible.deb.yaml
+#
+# 作成時点(2026年)では Debian 13 (Trixie) を想定しているが、
+# 将来別バージョンに対しても実行されることを見込み、
+# バージョン不一致はエラーにせず警告のみに留めている。
+# 数年後に実行する場合は、まずこのファイル自体が古くなっていないか
+# (パッケージ名の変更、KDE/Plasmaの仕様変更など)を一読してから流すこと。
+# エラーが出たタスクがあれば、そのタスクだけコメントアウトして他を進め、
+# 該当箇所だけ手動で最新のやり方を調べる方が早いことが多い。
+#
+# Ubuntu 版との主な違い:
+# - netplan を使わない。Debian はインストーラ既定で netplan を入れないため、
+#   ネットワーク管理は NetworkManager に直接任せる(下記ネットワーク関連タスク参照)。
+# - バージョン判定に lsb_release コマンドを使わず ansible facts を参照する。
+#   最小構成の Debian では lsb-release パッケージが未導入のことがあるため。
+#
+# 全体方針:
+# - hosts: localhost / connection: local で完結させている。
+#   個人の開発マシン1台のみが対象であり、複数台のinventory管理は不要と判断。
+# - 各タスクの設計判断(なぜそのパッケージ/設定を選んだか)は、
+#   このファイル内の該当タスクの直前にコメントとして残している。
+#   READMEにも概要はあるが、詳しい理由はこちらが一次情報。
+#
+# 実行後:
+# 再起動してSDDMのログイン画面からPlasma(Wayland)セッションを選択する。
+# fcitx5の設定(入力切替キー等)は fcitx5-config-qt から個別に行う。
+
+- name: KDE Plasma (Wayland) 最小構成セットアップ (Debian 13)
+  hosts: localhost
+  connection: local
+  become: true
+
+  vars:
+    expected_distribution: "Debian"
+    expected_release: "13"
+    # システムのUI言語は英語固定(ディレクトリ名やメッセージを英語にするため)。
+    # 日本語入力(fcitx5+mozc)はこのロケール設定とは独立して機能する。
+    system_locale: "en_US.UTF-8"
+    extra_locale: "ja_JP.UTF-8"
+    # sudo経由のansible-pull実行を想定し、実行ユーザーを自動判定。
+    # 想定と違う場合は実行時に -e target_user=xxxx で上書き可能。
+    target_user: "{{ lookup('env', 'SUDO_USER') | default(ansible_user_id, true) }}"
+    target_home: "/home/{{ target_user }}"
+    default_font: "IBM Plex Sans JP,10,-1,5,50,0,0,0,0,0"
+    default_fixed_font: "IBM Plex Mono,10,-1,5,50,0,0,0,0,0"
+    default_small_font: "IBM Plex Sans JP,8,-1,5,50,0,0,0,0,0"
+    plex_sans_jp_install_dir: "/usr/share/fonts/ibm-plex-sans-jp"
+    kde_packages:
+      - kde-plasma-desktop
+    fcitx_packages:
+      - fcitx5
+      - fcitx5-mozc
+      - fcitx5-config-qt
+      - fonts-noto-cjk
+
+  tasks:
+    - name: 想定外ディストリビューション/バージョンの場合は警告を表示
+      # lsb_release は最小構成の Debian だと未導入のことがあるため、
+      # gather_facts で必ず取れる ansible_distribution 系のfactsで判定する。
+      ansible.builtin.debug:
+        msg: >-
+          想定環境({{ expected_distribution }} {{ expected_release }})と異なります
+          (検出: {{ ansible_distribution }} {{ ansible_distribution_major_version }})。
+          このPlaybookが書かれた時点から時間が経っている場合、
+          パッケージ名やKDEの仕様が変わっている可能性があるので、
+          エラーが出た箇所は個別に最新情報を確認すること。
+      when: >-
+        ansible_distribution != expected_distribution
+        or ansible_distribution_major_version != expected_release
+
+    - name: apt キャッシュを更新
+      ansible.builtin.apt:
+        update_cache: true
+        cache_valid_time: 3600
+
+    - name: システムをアップグレード
+      ansible.builtin.apt:
+        upgrade: safe
+
+    # --- ThinkPad T14 AMD Gen5 ハードウェア対応 ---
+    # (Ryzen CPU + Radeon iGPU + Qualcomm QCNFA765 無線)
+    # 下記の microcode / firmware-* は non-free-firmware コンポーネントに含まれる。
+    # Debian 13 インストーラは必要時に自動で有効化するため通常は導入済み。
+    # 加えてこの機体は ansible-pull の実行自体に無線(Qualcomm)が要り、その無線も
+    # non-free-firmware 由来のため、ここまで到達できている時点で実質有効化済みのはず。
+    # 万一 sources に non-free-firmware が無いと apt が見つけられず失敗するので、
+    # その場合は sources の各 deb 行(または deb822 の Components:)に
+    # non-free-firmware を追記してから再実行すること。
+
+    - name: AMD CPUマイクロコードを導入
+      # 製造後に判明したCPUのバグ・脆弱性(Spectre系等)を起動時に当て直すための
+      # CPU内部ファームウェア。intel-microcodeのAMD版。実質デメリットがなく標準的に推奨。
+      ansible.builtin.apt:
+        name: amd64-microcode
+        state: present
+
+    - name: AMD GPUファームウェアを導入
+      # Radeon iGPU(T14 AMD Gen5 は Radeon 780M / RDNA3)用のファームウェア。
+      # amdgpuドライバが起動時にGPU各エンジンへロードして初めて本来の性能で動く。
+      # 新しい世代ほど影響が大きく、無いと画面が出ない/Wayland合成が重い/
+      # 動画HWデコードが効かない等になりやすいため T14 では事実上必須。
+      ansible.builtin.apt:
+        name: firmware-amd-graphics
+        state: present
+
+    - name: 無線(WiFi/Bluetooth)ファームウェアを導入
+      # 搭載チップは Qualcomm QCNFA765 (WCN6855系, ドライバ ath11k_pci)。
+      # ath11k 用ファームウェアと同チップの Bluetooth(QCA) ファームウェアは
+      # どちらも firmware-atheros に含まれるため、これ一つで WiFi/BT 両対応。
+      # チップ確認: lspci -nnk | grep -iA3 -e network -e wireless
+      ansible.builtin.apt:
+        name: firmware-atheros
+        state: present
+
+    - name: AMD GPUのユーザー空間ドライバ(Mesa)を導入
+      # ①②のファームウェアがGPUを起動させる土台なのに対し、こちらは起動したGPUを
+      # アプリ/デスクトップが使うためのユーザー空間ドライバ。
+      # - mesa-va-drivers: VA-API(動画HWデコード/エンコード, radeonsi)。
+      #   YouTube等でCPU負荷とバッテリー消費が下がり、ノートでは効果が大きい。
+      # - mesa-vulkan-drivers: Vulkan実装(RADV)。Vulkanを使うアプリ/ゲーム向け。
+      ansible.builtin.apt:
+        name:
+          - mesa-va-drivers
+          - mesa-vulkan-drivers
+        state: present
+
+    - name: ファームウェア更新ツール(fwupd)を導入
+      # UEFI(BIOS)や各種デバイスのファームウェアをLVFS経由でLinux上から更新する。
+      # ThinkPadはLenovoがLVFSにBIOS更新を提供しており対応が手厚いため、
+      #   fwupdmgr refresh && fwupdmgr update
+      # でWindows/USBブート無しに更新できる。KDEのDiscoverともGUI連携する。
+      ansible.builtin.apt:
+        name: fwupd
+        state: present
+
+    - name: 電源プロファイル管理(power-profiles-daemon)を導入
+      # 省電力/バランス/パフォーマンスの電源プロファイル切り替えを提供する。
+      # KDE Plasmaの電源管理UI(バッテリーのスライダー)はこのデーモンがあると機能する。
+      # T14 AMD Gen5 の CPU 周波数制御 amd-pstate(EPP) と連携し、バッテリー持ちと
+      # 発熱の体感に直結する。tlp とは競合するため併用しない(本構成では素直なこちらを採用)。
+      ansible.builtin.apt:
+        name: power-profiles-daemon
+        state: present
+
+    - name: NetworkManagerを導入
+      ansible.builtin.apt:
+        name: network-manager
+        state: present
+
+    - name: NetworkManagerに全デバイスを管理させる
+      # Debian には netplan が無いため、Ubuntu 版のような renderer 切り替えは不要。
+      # ただし Debian の NetworkManager は既定で ifupdown(/etc/network/interfaces)が
+      # 触っていないデバイスのみ管理する設定になっており、最小/Server系インストールで
+      # 主NICが /etc/network/interfaces に書かれているとNMが掴めない。
+      # [ifupdown] managed=true で ifupdown 管理下のデバイスもNMに管理させる。
+      # それでもPlasmaのネットワークUIに出ない場合は、/etc/network/interfaces から
+      # 主NICのstanza(allow-hotplug/iface ...)を手動でコメントアウトすること。
+      ansible.builtin.copy:
+        dest: /etc/NetworkManager/conf.d/10-globally-managed-devices.conf
+        owner: root
+        group: root
+        mode: "0644"
+        content: |
+          [ifupdown]
+          managed=true
+      notify: restart networkmanager
+
+    - name: NetworkManagerサービスを有効化
+      ansible.builtin.systemd:
+        name: NetworkManager
+        enabled: true
+        state: started
+
+    - name: systemd-networkd-wait-online を無効化(NM利用時は不要で起動遅延の原因になる)
+      # Debian の最小構成では networkd を使っていないこともあるが、masked は
+      # サービスが無効/未使用でも害がなく、有効になっていた場合の起動遅延を防げる。
+      ansible.builtin.systemd:
+        name: systemd-networkd-wait-online.service
+        masked: true
+        enabled: false
+
+    - name: KDE Plasma(最小構成)を導入
+      # kde-full ではなく kde-plasma-desktop を選択。
+      # kde-full は教育ツール等を含み肥大化するため、最小構成を優先している。
+      ansible.builtin.apt:
+        name: "{{ kde_packages }}"
+        state: present
+      environment:
+        DEBIAN_FRONTEND: noninteractive
+
+    - name: ターミナル関連ツール(Alacritty, tmux)を導入
+      # 設定ファイル(alacritty.toml, .tmux.conf等)はこのリポジトリでは管理しない。
+      # 既存のdotfiles管理から別途適用すること。
+      ansible.builtin.apt:
+        name:
+          - alacritty
+          - tmux
+        state: present
+
+    - name: Chezmoiを導入
+      ansible.builtin.shell:
+        cmd: curl -fsLS get.chezmoi.io | sh -s -- -b /usr/local/bin
+        creates: /usr/local/bin/chezmoi
+
+    - name: AFXの最新リリースを取得
+      ansible.builtin.uri:
+        url: https://api.github.com/repos/b4b4r07/afx/releases/latest
+        return_content: true
+        follow_redirects: safe
+      register: afx_release
+
+    - name: AFXをダウンロード
+      ansible.builtin.get_url:
+        url: >-
+          {{ afx_release.json.assets
+             | selectattr('name', 'search', '(?i)linux')
+             | selectattr('name', 'search', 'x86_64')
+             | map(attribute='browser_download_url')
+             | first }}
+        dest: /tmp/afx.tar.gz
+        mode: "0644"
+
+    - name: AFXを /usr/local/bin にインストール
+      ansible.builtin.unarchive:
+        src: /tmp/afx.tar.gz
+        dest: /usr/local/bin
+        remote_src: true
+
+    - name: Dockerを導入
+      ansible.builtin.apt:
+        name: docker.io
+        state: present
+
+    - name: 対象ユーザーをdockerグループに追加(sudo不要でdockerコマンドを実行するため)
+      ansible.builtin.user:
+        name: "{{ target_user }}"
+        groups: docker
+        append: true
+
+    - name: Dockerのデータルートディレクトリを作成
+      ansible.builtin.file:
+        path: "{{ target_home }}/.docker-data"
+        state: directory
+        owner: root
+        group: root
+        mode: "0710"
+
+    - name: Dockerのデータルートを/homeに変更(デフォルトの/var/lib/dockerはルートパーティションを圧迫するため)
+      # /home が別パーティション・大容量ストレージに割り当てられている環境では、
+      # イメージやコンテナのデータを /home/docker に置くことで
+      # ルートパーティションの容量逼迫を防ぐ。
+      ansible.builtin.copy:
+        dest: /etc/docker/daemon.json
+        owner: root
+        group: root
+        mode: "0644"
+        content: |
+          {
+            "data-root": "{{ target_home }}/.docker-data"
+          }
+      notify: restart docker
+
+    - name: Dockerサービスを有効化
+      ansible.builtin.systemd:
+        name: docker
+        enabled: true
+        state: started
+
+    - name: Google Chromeをダウンロードしてインストール
+      # Google公式の安定版debパッケージを直接取得する。
+      # aptリポジトリを追加する方法もあるが、個人マシン1台の用途では
+      # debパッケージ直接インストールのほうがシンプル。
+      # Chrome自身がインストール時に自動更新用リポジトリを登録するため、
+      # 以降のアップデートはaptで自動的に行われる。
+      ansible.builtin.apt:
+        deb: https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
+        state: present
+
+    - name: SDDMを導入
+      ansible.builtin.apt:
+        name: sddm
+        state: present
+      environment:
+        DEBIAN_FRONTEND: noninteractive
+
+    - name: SDDMをデフォルトディスプレイマネージャに設定
+      ansible.builtin.debconf:
+        name: sddm
+        question: shared/default-x-display-manager
+        value: sddm
+        vtype: select
+      notify: dpkg-reconfigure sddm
+
+    - name: SDDMでPlasma(Wayland)セッションをデフォルトに設定
+      # WaylandはKDE6系のデフォルト。GPUはIntel/AMD内蔵のみで特殊なドライバ事情が
+      # ないため、素直にデフォルトに乗る判断をしている(NVIDIA環境ならX11も検討)。
+      # [Autologin]はUser未指定のため自動ログイン自体は無効。セッションのデフォルトを
+      # Waylandにする目的のみで使っている。
+      ansible.builtin.copy:
+        dest: /etc/sddm.conf.d/10-wayland.conf
+        owner: root
+        group: root
+        mode: "0644"
+        content: |
+          [Autologin]
+          Session=plasmawayland
+
+          [General]
+          DisplayServer=wayland
+
+    - name: グラフィカルターゲットをデフォルトに設定
+      ansible.builtin.command: systemctl set-default graphical.target
+      changed_when: false
+
+    - name: 日本語(入力用)・英語(UI用)ロケールを生成
+      # システム全体は en_US.UTF-8 に固定する方針。ja_JP.UTF-8 は入力用に
+      # 生成だけしておく(システムのデフォルトLANGには採用しない)。
+      ansible.builtin.command: "locale-gen {{ item }}"
+      changed_when: false
+      loop:
+        - "{{ system_locale }}"
+        - "{{ extra_locale }}"
+
+    - name: システムのデフォルトロケールを英語に設定(ディレクトリ名やUIを英語にするため)
+      # LANGをen_US.UTF-8にしておくと、xdg-user-dirs-updateが作るホーム直下の
+      # ディレクトリ名(Downloads, Documents等)も英語になる。
+      # 日本語入力(fcitx5+mozc)はロケール設定と独立した機能なので、
+      # 英語UIのままで問題なく日本語入力できる。
+      ansible.builtin.command: "update-locale LANG={{ system_locale }}"
+      changed_when: false
+
+    - name: 日本語入力環境(fcitx5+mozc)を導入
+      ansible.builtin.apt:
+        name: "{{ fcitx_packages }}"
+        state: present
+
+    - name: fcitx5用の環境変数を設定
+      ansible.builtin.copy:
+        dest: /etc/environment.d/90-fcitx5.conf
+        owner: root
+        group: root
+        mode: "0644"
+        content: |
+          GTK_IM_MODULE=fcitx
+          QT_IM_MODULE=fcitx
+          XMODIFIERS=@im=fcitx
+          SDL_IM_MODULE=fcitx
+
+    - name: CapsLock を Left Control として扱う (XKBOPTIONS)
+      # システム全体のキーボード設定。/etc/default/keyboard は systemd-localed 経由で
+      # Plasma(Wayland) セッション・SDDMログイン画面・TTY のすべてに効くため、
+      # ユーザー単位(kxkbrc)ではなくここに置いている。
+      # ctrl:nocaps = CapsLock を Ctrl 化し、CapsLock 本来の機能は無効にする。
+      ansible.builtin.lineinfile:
+        path: /etc/default/keyboard
+        regexp: '^XKBOPTIONS='
+        line: 'XKBOPTIONS="ctrl:nocaps"'
+      notify: reconfigure keyboard
+
+    - name: 絵文字フォント(Noto Color Emoji)を導入
+      # CBDT/CBLC形式でLinux上で広くカラー表示される。Debian公式パッケージの
+      # fontconfigルールにより絵文字レンジは自動でこのフォントへフォールバック
+      # するため、追加のfontconfig設定は不要。
+      ansible.builtin.apt:
+        name: fonts-noto-color-emoji
+        state: present
+
+    - name: IBM Plexフォントを導入
+      # 通常のIBM Plex SansはCJKグリフを持たないため、日本語部分がNoto Sans CJK等に
+      # フォールバックしてデザインの一貫性が崩れる。そのため日本語対応版の
+      # IBM Plex Sans JP(下記タスクで別途取得)をメインフォントに採用している。
+      # ここで導入する fonts-ibm-plex はラテン文字用の補助。
+      ansible.builtin.apt:
+        name: fonts-ibm-plex
+        state: present
+
+    - name: zip/unzipを導入
+      ansible.builtin.apt:
+        name:
+          - zip
+          - unzip
+        state: present
+
+    - name: IBM Plex Sans JPのリリース一覧を取得
+      # GitHubのリリースタグがバージョン番号を含む形式(@ibm/plex-sans-jp@x.y.z)で、
+      # 数年単位で更新され続けるため、固定URLではなくAPIで最新版を動的に取得する。
+      ansible.builtin.uri:
+        url: "https://api.github.com/repos/IBM/plex/releases"
+        return_content: true
+      register: plex_releases
+
+    - name: IBM Plex Sans JPの最新リリースを特定
+      ansible.builtin.set_fact:
+        plex_sans_jp_release: >-
+          {{ plex_releases.json
+             | selectattr('tag_name', 'match', '^@ibm/plex-sans-jp@')
+             | list | first }}
+
+    - name: IBM Plex Sans JPのダウンロードURLを特定
+      ansible.builtin.set_fact:
+        plex_sans_jp_asset_url: >-
+          {{ (plex_sans_jp_release.assets
+              | selectattr('name', 'search', 'OpenType')
+              | map(attribute='browser_download_url') | list
+              | first)
+             | default((plex_sans_jp_release.assets
+                         | map(attribute='browser_download_url') | list | first), true) }}
+
+    - name: IBM Plex Sans JPをダウンロード
+      ansible.builtin.get_url:
+        url: "{{ plex_sans_jp_asset_url }}"
+        dest: /tmp/ibm-plex-sans-jp.zip
+        mode: "0644"
+
+    - name: IBM Plex Sans JPの展開先ディレクトリを作成
+      ansible.builtin.file:
+        path: "{{ plex_sans_jp_install_dir }}"
+        state: directory
+        mode: "0755"
+
+    - name: IBM Plex Sans JPを展開
+      ansible.builtin.unarchive:
+        src: /tmp/ibm-plex-sans-jp.zip
+        dest: "{{ plex_sans_jp_install_dir }}"
+        remote_src: true
+
+    - name: フォントキャッシュを更新
+      ansible.builtin.command: fc-cache -f
+      changed_when: false
+
+    - name: 対象ユーザーの~/.configディレクトリを確認
+      # フォント設定はユーザー単位(~/.config/kdeglobals)のため、
+      # target_user(上のvarsでSUDO_USERから自動判定)のホームに書き込む。
+      ansible.builtin.file:
+        path: "{{ target_home }}/.config"
+        state: directory
+        owner: "{{ target_user }}"
+        group: "{{ target_user }}"
+        mode: "0755"
+
+    - name: KDEのデフォルトフォントをIBM Plex Sansに設定
+      # kwriteconfig6はPlasma 6系のコマンド名。Debian 13 は Plasma 6 系のため kwriteconfig6 で正しい。
+      # 将来Plasmaのメジャーバージョンが上がっていて command not found になったら、
+      # その時点のバージョンに応じたコマンド名(kwriteconfig7等)に読み替えること。
+      ansible.builtin.command:
+        cmd: >-
+          kwriteconfig6 --file kdeglobals --group General
+          --key font "{{ default_font }}"
+      become_user: "{{ target_user }}"
+      environment:
+        HOME: "{{ target_home }}"
+      changed_when: true
+
+    - name: KDEのメニューフォントをIBM Plex Sansに設定
+      ansible.builtin.command:
+        cmd: >-
+          kwriteconfig6 --file kdeglobals --group General
+          --key menuFont "{{ default_font }}"
+      become_user: "{{ target_user }}"
+      environment:
+        HOME: "{{ target_home }}"
+      changed_when: true
+
+    - name: KDEのツールバーフォントをIBM Plex Sansに設定
+      ansible.builtin.command:
+        cmd: >-
+          kwriteconfig6 --file kdeglobals --group General
+          --key toolBarFont "{{ default_font }}"
+      become_user: "{{ target_user }}"
+      environment:
+        HOME: "{{ target_home }}"
+      changed_when: true
+
+    - name: KDEの小さい文字用フォントをIBM Plex Sansに設定
+      ansible.builtin.command:
+        cmd: >-
+          kwriteconfig6 --file kdeglobals --group General
+          --key smallestReadableFont "{{ default_small_font }}"
+      become_user: "{{ target_user }}"
+      environment:
+        HOME: "{{ target_home }}"
+      changed_when: true
+
+    - name: KDEの等幅フォントをIBM Plex Monoに設定
+      ansible.builtin.command:
+        cmd: >-
+          kwriteconfig6 --file kdeglobals --group General
+          --key fixed "{{ default_fixed_font }}"
+      become_user: "{{ target_user }}"
+      environment:
+        HOME: "{{ target_home }}"
+      changed_when: true
+
+    - name: 完了メッセージ
+      ansible.builtin.debug:
+        msg: >-
+          セットアップ完了。再起動するとSDDMからPlasma(Wayland)で
+          ログインできるはず。再起動後、fcitx5の設定(入力切替キー等)は
+          fcitx5-config-qt から個別に行うこと。
+          デフォルトフォントはIBM Plex Sans JP/Monoに設定済み(対象ユーザー:
+          {{ target_user }})。反映されない場合はログアウト・ログインし直すこと。
+          絵文字はNoto Color Emojiにフォールバックする想定(ターミナル等で表示確認推奨)。
+          追加アプリは最小構成のため未導入(意図的)。
+
+  handlers:
+    - name: restart networkmanager
+      ansible.builtin.systemd:
+        name: NetworkManager
+        state: restarted
+
+    - name: dpkg-reconfigure sddm
+      ansible.builtin.command: dpkg-reconfigure -f noninteractive sddm
+
+    - name: reconfigure keyboard
+      ansible.builtin.command: dpkg-reconfigure -f noninteractive keyboard-configuration
+
+    - name: restart docker
+      ansible.builtin.systemd:
+        name: docker
+        state: restarted
