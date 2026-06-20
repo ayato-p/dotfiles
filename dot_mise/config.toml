@@ -2,5 +2,16 @@
 gauge = "https://github.com/ayato-p/asdf-gauge.git"
 
 [tools]
+babashka = "1.12.218"
+clojure = "1.12.5.1654"
+dart = "3.12.2"
 deno = "latest"
-psqldef = "3.9.8"
+gauge = "1.6.33"
+helm = "3.21.1"
+k9s = "0.51.0"
+nodejs = "22.23.0"
+psqldef = "3.11.11"
+python = "3.14.6"
+rust = "1.96.0"
+skaffold = "2.22.0"
+yarn = "1.22.19"
