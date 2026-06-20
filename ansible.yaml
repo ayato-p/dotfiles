@@ -105,6 +105,12 @@
         enabled: true
         state: started
 
+    - name: systemd-networkd-wait-online を無効化(NM移行後は不要で起動遅延の原因になる)
+      ansible.builtin.systemd:
+        name: systemd-networkd-wait-online.service
+        masked: true
+        enabled: false
+
     - name: KDE Plasma(最小構成)を導入
       # kde-full ではなく kde-plasma-desktop を選択。
       # kde-full は教育ツール等を含み肥大化するため、最小構成を優先している。
@@ -122,6 +128,34 @@
           - alacritty
           - tmux
         state: present
+
+    - name: Chezmoiを導入
+      ansible.builtin.shell:
+        cmd: curl -fsLS get.chezmoi.io | sh -s -- -b /usr/local/bin
+        creates: /usr/local/bin/chezmoi
+
+    - name: AFXの最新リリースを取得
+      ansible.builtin.uri:
+        url: https://api.github.com/repos/b4b4r07/afx/releases/latest
+        return_content: true
+      register: afx_release
+
+    - name: AFXをダウンロード
+      ansible.builtin.get_url:
+        url: >-
+          {{ afx_release.json.assets
+             | selectattr('name', 'search', 'linux')
+             | selectattr('name', 'search', 'amd64')
+             | map(attribute='browser_download_url')
+             | first }}
+        dest: /tmp/afx.tar.gz
+        mode: "0644"
+
+    - name: AFXを /usr/local/bin にインストール
+      ansible.builtin.unarchive:
+        src: /tmp/afx.tar.gz
+        dest: /usr/local/bin
+        remote_src: true
 
     - name: SDDMを導入
       ansible.builtin.apt:
