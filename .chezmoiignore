@@ -1,7 +1,7 @@
 # chezmoi の配布対象から除外する（パターンは ~ からの相対パス）
 
-# Ansible playbook（ansible-pull 用。chezmoi が ~/local.yml として撒くのを防ぐ）
-local.yml
+# Ansible playbook（ansible-pull 用。chezmoi が ~/ansible.yaml として撒くのを防ぐ）
+ansible.yaml
 
 # 将来 ansible/ 配下に role 等を増やしたとき用
 ansible

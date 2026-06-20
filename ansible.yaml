@@ -2,7 +2,7 @@
 # KDE Plasma (Wayland) 最小構成セットアップ
 #
 # 想定: ansible-pull での実行
-#   sudo ansible-pull -U <このリポジトリのURL> local.yml
+#   sudo ansible-pull -U <このリポジトリのURL> ansible.yaml
 #
 # 作成時点(2026年)では Ubuntu 26.04 LTS を想定しているが、
 # 将来別バージョンに対しても実行されることを見込み、
