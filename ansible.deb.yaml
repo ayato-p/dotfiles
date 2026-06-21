@@ -204,9 +204,18 @@
           - tmux
         state: present
 
+    - name: Chezmoiインストーラをダウンロード
+      # minimal Debian には curl が無いことがあり、curl | sh 方式だと
+      # curl が見つからなくても sh が exit 0 を返し静かに失敗する。
+      # Ansible の get_url なら urllib で取得するため外部コマンド不要。
+      ansible.builtin.get_url:
+        url: https://get.chezmoi.io
+        dest: /tmp/install-chezmoi.sh
+        mode: "0755"
+
     - name: Chezmoiを導入
-      ansible.builtin.shell:
-        cmd: curl -fsLS get.chezmoi.io | sh -s -- -b /usr/local/bin
+      ansible.builtin.command:
+        cmd: sh /tmp/install-chezmoi.sh -b /usr/local/bin
         creates: /usr/local/bin/chezmoi
 
     - name: AFXの最新リリースを取得
@@ -353,16 +362,37 @@
           XMODIFIERS=@im=fcitx
           SDL_IM_MODULE=fcitx
 
-    - name: CapsLock を Left Control として扱う (XKBOPTIONS)
-      # システム全体のキーボード設定。/etc/default/keyboard は systemd-localed 経由で
-      # Plasma(Wayland) セッション・SDDMログイン画面・TTY のすべてに効くため、
-      # ユーザー単位(kxkbrc)ではなくここに置いている。
+    - name: CapsLock を Left Control として扱う (TTY/SDDM用)
+      # /etc/default/keyboard はTTY(仮想コンソール)とSDDMログイン画面に効く。
+      # Plasma Wayland セッション内では kxkbrc が優先されるため、別途設定する(下記)。
       # ctrl:nocaps = CapsLock を Ctrl 化し、CapsLock 本来の機能は無効にする。
       ansible.builtin.lineinfile:
         path: /etc/default/keyboard
         regexp: '^XKBOPTIONS='
         line: 'XKBOPTIONS="ctrl:nocaps"'
       notify: reconfigure keyboard
+
+    - name: CapsLock を Left Control として扱う (Plasma Wayland セッション用)
+      # Plasma 6 Wayland は /etc/default/keyboard を直接参照せず、
+      # ユーザー単位の kxkbrc からキーボードオプションを読む。
+      ansible.builtin.command:
+        cmd: >-
+          kwriteconfig6 --file kxkbrc --group Layout
+          --key Options "ctrl:nocaps"
+      become_user: "{{ target_user }}"
+      environment:
+        HOME: "{{ target_home }}"
+      changed_when: true
+
+    - name: kxkbrc で旧オプションをリセットする設定を有効化
+      ansible.builtin.command:
+        cmd: >-
+          kwriteconfig6 --file kxkbrc --group Layout
+          --key ResetOldOptions "true"
+      become_user: "{{ target_user }}"
+      environment:
+        HOME: "{{ target_home }}"
+      changed_when: true
 
     - name: 絵文字フォント(Noto Color Emoji)を導入
       # CBDT/CBLC形式でLinux上で広くカラー表示される。Debian公式パッケージの
