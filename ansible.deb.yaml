@@ -429,6 +429,13 @@
         dest: "{{ plex_sans_jp_install_dir }}"
         remote_src: true
 
+    - name: IBM Plex Sans JPのパーミッションを修正(zipのディレクトリ権限が700のものがある)
+      ansible.builtin.file:
+        path: "{{ plex_sans_jp_install_dir }}"
+        state: directory
+        mode: "u=rwX,go=rX"
+        recurse: true
+
     - name: IBM Plex Monoの最新リリースを特定
       ansible.builtin.set_fact:
         plex_mono_release: >-
@@ -463,6 +470,37 @@
         src: /tmp/ibm-plex-mono.zip
         dest: "{{ plex_mono_install_dir }}"
         remote_src: true
+
+    - name: IBM Plex Monoのパーミッションを修正(zipのディレクトリ権限が700のものがある)
+      ansible.builtin.file:
+        path: "{{ plex_mono_install_dir }}"
+        state: directory
+        mode: "u=rwX,go=rX"
+        recurse: true
+
+    - name: fontconfigからIBM Plexのwoff/woff2を除外(デスクトップ描画にはOTF/TTFだけ使う)
+      # IBM PlexのGitHubリリースzipにはWeb用のsplit woff/woff2が数千ファイル含まれる。
+      # 各ファイルがグリフの一部しか持たないため、fontconfigに登録されると
+      # Pango/GTKが不完全なファイルを選択して文字化けの原因になる。
+      # ファイル自体は残すがfontconfigのインデックスからは除外する。
+      # fontconfigのglobは * が / にマッチしないため、フルパスで指定する必要がある。
+      ansible.builtin.copy:
+        dest: /etc/fonts/conf.d/69-reject-ibm-plex-woff.conf
+        owner: root
+        group: root
+        mode: "0644"
+        content: |
+          <?xml version="1.0"?>
+          <!DOCTYPE fontconfig SYSTEM "fonts.dtd">
+          <fontconfig>
+            <selectfont>
+              <rejectfont>
+                <glob>/usr/share/fonts/ibm-plex-*/ibm-plex-*/fonts/split/*</glob>
+                <glob>/usr/share/fonts/ibm-plex-*/ibm-plex-*/fonts/complete/woff/*</glob>
+                <glob>/usr/share/fonts/ibm-plex-*/ibm-plex-*/fonts/complete/woff2/*</glob>
+              </rejectfont>
+            </selectfont>
+          </fontconfig>
 
     - name: フォントキャッシュを更新
       ansible.builtin.command: fc-cache -f

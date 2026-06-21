@@ -141,6 +141,6 @@ export PATH="$PATH":"$HOME/.pub-cache/bin"
 # export GOPATH=$HOME/go
 
 # eval "$(mise activate bash)"
-alias claude="/home/ayato-p/.claude/local/claude"
+export PATH="$HOME/.local/bin:$PATH"
 
 # eval "$(direnv hook bash)"
