@@ -1,0 +1,14 @@
+github:
+  - name: blahgeek/emacs-appimage
+    description: GNU Emacs AppImage with pgtk (pure GTK) support
+    owner: blahgeek
+    repo: emacs-appimage
+    release:
+      name: emacs-appimage
+      tag: github-action-build-17008212441
+      asset:
+        filename: Emacs-30.2-pgtk-x86_64.AppImage
+    command:
+      link:
+        - from: '**/Emacs-*.AppImage'
+          to: emacs
