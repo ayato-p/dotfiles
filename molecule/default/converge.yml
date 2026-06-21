@@ -20,7 +20,8 @@
       - fcitx5-mozc
       - fcitx5-config-qt
       - fonts-noto-cjk
-    test_github_api: false
+    test_github_api: true
+    github_token: "{{ lookup('env', 'GITHUB_TOKEN') | default('', true) }}"
 
   tasks:
     - name: 想定外ディストリビューション/バージョンの場合は警告を表示
@@ -150,6 +151,7 @@
       ansible.builtin.uri:
         url: "https://api.github.com/repos/IBM/plex/releases"
         return_content: true
+        headers: "{{ {'Authorization': 'token ' + github_token} if github_token else {} }}"
       register: plex_releases
       when: test_github_api | bool
 
