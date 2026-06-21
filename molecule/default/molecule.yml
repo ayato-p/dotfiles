@@ -3,11 +3,11 @@ driver:
   name: docker
 platforms:
   - name: debian13
-    image: debian:trixie
+    image: molecule-debian13:latest
+    pre_build_image: true
     privileged: true
     command: /bin/bash
     tty: true
-    dockerfile: Dockerfile
 provisioner:
   name: ansible
   env:
