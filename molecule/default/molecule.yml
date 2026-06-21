@@ -1,0 +1,24 @@
+---
+driver:
+  name: docker
+platforms:
+  - name: debian13
+    image: debian:trixie
+    privileged: true
+    command: /bin/bash
+    tty: true
+    dockerfile: Dockerfile
+    volumes:
+      - /usr/local/share/ca-certificates:/usr/local/share/ca-certificates:ro
+provisioner:
+  name: ansible
+  env:
+    ANSIBLE_VERBOSITY: "1"
+  inventory:
+    host_vars:
+      debian13:
+        target_user: testuser
+        target_home: /home/testuser
+        ansible_user: root
+verifier:
+  name: ansible

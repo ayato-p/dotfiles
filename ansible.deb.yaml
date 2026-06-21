@@ -77,7 +77,7 @@
         ansible_distribution != expected_distribution
         or ansible_distribution_major_version != expected_release
 
-    - name: apt キャッシュを更新
+    - name: Apt キャッシュを更新
       ansible.builtin.apt:
         update_cache: true
         cache_valid_time: 3600
@@ -172,7 +172,7 @@
         content: |
           [ifupdown]
           managed=true
-      notify: restart networkmanager
+      notify: Restart networkmanager
 
     - name: NetworkManagerサービスを有効化
       ansible.builtin.systemd:
@@ -180,7 +180,7 @@
         enabled: true
         state: started
 
-    - name: systemd-networkd-wait-online を無効化(NM利用時は不要で起動遅延の原因になる)
+    - name: Systemd-networkd-wait-online を無効化(NM利用時は不要で起動遅延の原因になる)
       # Debian の最小構成では networkd を使っていないこともあるが、masked は
       # サービスが無効/未使用でも害がなく、有効になっていた場合の起動遅延を防げる。
       ansible.builtin.systemd:
@@ -276,7 +276,7 @@
           {
             "data-root": "{{ target_home }}/.docker-data"
           }
-      notify: restart docker
+      notify: Restart docker
 
     - name: Dockerサービスを有効化
       ansible.builtin.systemd:
@@ -320,7 +320,7 @@
         name: "{{ fcitx_packages }}"
         state: present
 
-    - name: fcitx5用の環境変数を設定
+    - name: Fcitx5用の環境変数を設定
       ansible.builtin.copy:
         dest: /etc/environment.d/90-fcitx5.conf
         owner: root
@@ -340,7 +340,7 @@
         path: /etc/default/keyboard
         regexp: '^XKBOPTIONS='
         line: 'XKBOPTIONS="ctrl:nocaps"'
-      notify: reconfigure keyboard
+      notify: Reconfigure keyboard
 
     - name: CapsLock を Left Control として扱う (Plasma Wayland セッション用)
       # Plasma 6 Wayland は /etc/default/keyboard を直接参照せず、
@@ -349,16 +349,18 @@
         cmd: >-
           kwriteconfig6 --file kxkbrc --group Layout
           --key Options "ctrl:nocaps"
+      become: true
       become_user: "{{ target_user }}"
       environment:
         HOME: "{{ target_home }}"
       changed_when: true
 
-    - name: kxkbrc で旧オプションをリセットする設定を有効化
+    - name: Kxkbrc で旧オプションをリセットする設定を有効化
       ansible.builtin.command:
         cmd: >-
           kwriteconfig6 --file kxkbrc --group Layout
           --key ResetOldOptions "true"
+      become: true
       become_user: "{{ target_user }}"
       environment:
         HOME: "{{ target_home }}"
@@ -377,7 +379,7 @@
     # IBM Plex Sans JP と同様に GitHub releases から取得する。
     # Sans(プロポーショナル)は Plex Sans JP がラテン文字もカバーするため不要。
 
-    - name: zip/unzipを導入
+    - name: Zip/unzipを導入
       ansible.builtin.apt:
         name:
           - zip
@@ -484,6 +486,7 @@
         cmd: >-
           kwriteconfig6 --file kdeglobals --group General
           --key font "{{ default_font }}"
+      become: true
       become_user: "{{ target_user }}"
       environment:
         HOME: "{{ target_home }}"
@@ -494,6 +497,7 @@
         cmd: >-
           kwriteconfig6 --file kdeglobals --group General
           --key menuFont "{{ default_font }}"
+      become: true
       become_user: "{{ target_user }}"
       environment:
         HOME: "{{ target_home }}"
@@ -504,6 +508,7 @@
         cmd: >-
           kwriteconfig6 --file kdeglobals --group General
           --key toolBarFont "{{ default_font }}"
+      become: true
       become_user: "{{ target_user }}"
       environment:
         HOME: "{{ target_home }}"
@@ -514,6 +519,7 @@
         cmd: >-
           kwriteconfig6 --file kdeglobals --group General
           --key smallestReadableFont "{{ default_small_font }}"
+      become: true
       become_user: "{{ target_user }}"
       environment:
         HOME: "{{ target_home }}"
@@ -524,6 +530,7 @@
         cmd: >-
           kwriteconfig6 --file kdeglobals --group General
           --key fixed "{{ default_fixed_font }}"
+      become: true
       become_user: "{{ target_user }}"
       environment:
         HOME: "{{ target_home }}"
@@ -541,15 +548,16 @@
           追加アプリは最小構成のため未導入(意図的)。
 
   handlers:
-    - name: restart networkmanager
+    - name: Restart networkmanager
       ansible.builtin.systemd:
         name: NetworkManager
         state: restarted
 
-    - name: reconfigure keyboard
+    - name: Reconfigure keyboard
       ansible.builtin.command: dpkg-reconfigure -f noninteractive keyboard-configuration
+      changed_when: true
 
-    - name: restart docker
+    - name: Restart docker
       ansible.builtin.systemd:
         name: docker
         state: restarted

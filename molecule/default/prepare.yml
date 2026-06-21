@@ -1,0 +1,44 @@
+---
+- name: Prepare test environment
+  hosts: all
+  become: true
+  tasks:
+    - name: Install systemd and essential packages
+      ansible.builtin.apt:
+        update_cache: true
+        name:
+          - systemd
+          - python3
+          - sudo
+          - locales
+          - keyboard-configuration
+          - ca-certificates
+          - curl
+          - fontconfig
+        state: present
+
+    - name: Update CA certificates
+      ansible.builtin.command: update-ca-certificates
+      changed_when: false
+
+    - name: Enable en_US.UTF-8 locale
+      ansible.builtin.lineinfile:
+        path: /etc/locale.gen
+        regexp: '^#?\s*en_US.UTF-8'
+        line: 'en_US.UTF-8 UTF-8'
+
+    - name: Enable ja_JP.UTF-8 locale
+      ansible.builtin.lineinfile:
+        path: /etc/locale.gen
+        regexp: '^#?\s*ja_JP.UTF-8'
+        line: 'ja_JP.UTF-8 UTF-8'
+
+    - name: Generate locales
+      ansible.builtin.command: locale-gen
+      changed_when: false
+
+    - name: Create test user
+      ansible.builtin.user:
+        name: testuser
+        create_home: true
+        shell: /bin/bash
