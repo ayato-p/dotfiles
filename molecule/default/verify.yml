@@ -1,0 +1,154 @@
+---
+- name: Verify - ansible.deb.yaml の結果検証
+  hosts: all
+  become: true
+  vars:
+    target_user: testuser
+    target_home: /home/testuser
+
+  tasks:
+    - name: Chezmoi がインストールされていること
+      ansible.builtin.command: /usr/local/bin/chezmoi --version
+      changed_when: false
+
+    - name: Docker がインストールされていること
+      ansible.builtin.command: dpkg -s docker.io
+      changed_when: false
+
+    - name: Testuser が docker グループに所属していること
+      ansible.builtin.command: id -nG testuser
+      register: user_groups
+      changed_when: false
+
+    - name: Docker グループの確認
+      ansible.builtin.assert:
+        that:
+          - "'docker' in user_groups.stdout"
+
+    - name: Docker データルートディレクトリが存在すること
+      ansible.builtin.stat:
+        path: "{{ target_home }}/.docker-data"
+      register: docker_data
+
+    - name: Docker データルートの検証
+      ansible.builtin.assert:
+        that:
+          - docker_data.stat.exists
+          - docker_data.stat.isdir
+
+    - name: Docker daemon.json が正しく設定されていること
+      ansible.builtin.slurp:
+        src: /etc/docker/daemon.json
+      register: docker_config
+
+    - name: Docker daemon.json の検証
+      ansible.builtin.assert:
+        that:
+          - "'.docker-data' in (docker_config.content | b64decode)"
+
+    - name: NetworkManager 設定ファイルが存在すること
+      ansible.builtin.stat:
+        path: /etc/NetworkManager/conf.d/10-globally-managed-devices.conf
+      register: nm_config
+
+    - name: NetworkManager 設定の検証
+      ansible.builtin.assert:
+        that:
+          - nm_config.stat.exists
+
+    - name: NetworkManager 設定の内容を確認
+      ansible.builtin.slurp:
+        src: /etc/NetworkManager/conf.d/10-globally-managed-devices.conf
+      register: nm_content
+
+    - name: NetworkManager 設定に managed=true が含まれること
+      ansible.builtin.assert:
+        that:
+          - "'managed=true' in (nm_content.content | b64decode)"
+
+    - name: Fcitx5 環境変数ファイルが存在すること
+      ansible.builtin.stat:
+        path: /etc/environment.d/90-fcitx5.conf
+      register: fcitx_env
+
+    - name: Fcitx5 環境変数の検証
+      ansible.builtin.assert:
+        that:
+          - fcitx_env.stat.exists
+
+    - name: Fcitx5 環境変数の内容を確認
+      ansible.builtin.slurp:
+        src: /etc/environment.d/90-fcitx5.conf
+      register: fcitx_content
+
+    - name: Fcitx5 環境変数に必要な設定が含まれること
+      ansible.builtin.assert:
+        that:
+          - "'GTK_IM_MODULE=fcitx' in (fcitx_content.content | b64decode)"
+          - "'QT_IM_MODULE=fcitx' in (fcitx_content.content | b64decode)"
+          - "'XMODIFIERS=@im=fcitx' in (fcitx_content.content | b64decode)"
+          - "'SDL_IM_MODULE=fcitx' in (fcitx_content.content | b64decode)"
+
+    - name: CapsLock 設定が適用されていること
+      ansible.builtin.command: grep 'XKBOPTIONS="ctrl:nocaps"' /etc/default/keyboard
+      changed_when: false
+
+    - name: 対象ユーザーの .config ディレクトリが存在すること
+      ansible.builtin.stat:
+        path: "{{ target_home }}/.config"
+      register: user_config
+
+    - name: ".config ディレクトリの検証"
+      ansible.builtin.assert:
+        that:
+          - user_config.stat.exists
+          - user_config.stat.isdir
+          - "user_config.stat.pw_name == 'testuser'"
+
+    - name: ロケール設定を確認
+      ansible.builtin.command: cat /etc/default/locale
+      register: locale_setting
+      changed_when: false
+
+    - name: ロケールの検証
+      ansible.builtin.assert:
+        that:
+          - "'en_US.UTF-8' in locale_setting.stdout"
+
+    - name: Tmux がインストールされていること
+      ansible.builtin.command: dpkg -s tmux
+      changed_when: false
+
+    - name: Fcitx5 パッケージがインストールされていること
+      ansible.builtin.command: dpkg -s fcitx5
+      changed_when: false
+
+    - name: 絵文字フォントがインストールされていること
+      ansible.builtin.command: dpkg -s fonts-noto-color-emoji
+      changed_when: false
+
+    - name: フォントディレクトリが作成されていること
+      ansible.builtin.stat:
+        path: /usr/share/fonts/ibm-plex-sans-jp
+      register: font_dir_sans
+
+    - name: フォントディレクトリの検証 (Sans JP)
+      ansible.builtin.assert:
+        that:
+          - font_dir_sans.stat.exists
+          - font_dir_sans.stat.isdir
+
+    - name: フォントディレクトリが作成されていること (Mono)
+      ansible.builtin.stat:
+        path: /usr/share/fonts/ibm-plex-mono
+      register: font_dir_mono
+
+    - name: フォントディレクトリの検証 (Mono)
+      ansible.builtin.assert:
+        that:
+          - font_dir_mono.stat.exists
+          - font_dir_mono.stat.isdir
+
+    - name: 検証完了
+      ansible.builtin.debug:
+        msg: "All verifications passed."

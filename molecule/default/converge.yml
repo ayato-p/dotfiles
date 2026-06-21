@@ -1,0 +1,250 @@
+---
+- name: Converge - ansible.deb.yaml のテスト
+  hosts: all
+  become: true
+
+  vars:
+    expected_distribution: "Debian"
+    expected_release: "13"
+    system_locale: "en_US.UTF-8"
+    extra_locale: "ja_JP.UTF-8"
+    target_user: testuser
+    target_home: /home/testuser
+    default_font: "IBM Plex Sans JP,10,-1,5,50,0,0,0,0,0"
+    default_fixed_font: "IBM Plex Mono,10,-1,5,50,0,0,0,0,0"
+    default_small_font: "IBM Plex Sans JP,8,-1,5,50,0,0,0,0,0"
+    plex_sans_jp_install_dir: "/usr/share/fonts/ibm-plex-sans-jp"
+    plex_mono_install_dir: "/usr/share/fonts/ibm-plex-mono"
+    fcitx_packages:
+      - fcitx5
+      - fcitx5-mozc
+      - fcitx5-config-qt
+      - fonts-noto-cjk
+    test_github_api: true
+    github_token: "{{ lookup('env', 'GITHUB_TOKEN') | default('', true) }}"
+
+  tasks:
+    - name: 想定外ディストリビューション/バージョンの場合は警告を表示
+      ansible.builtin.debug:
+        msg: >-
+          想定環境({{ expected_distribution }} {{ expected_release }})と異なります
+          (検出: {{ ansible_distribution }} {{ ansible_distribution_major_version }})。
+      when: >-
+        ansible_distribution != expected_distribution
+        or ansible_distribution_major_version != expected_release
+
+    - name: Apt キャッシュを更新
+      ansible.builtin.apt:
+        update_cache: true
+        cache_valid_time: 3600
+
+    - name: NetworkManagerを導入
+      ansible.builtin.apt:
+        name: network-manager
+        state: present
+
+    - name: NetworkManagerに全デバイスを管理させる
+      ansible.builtin.copy:
+        dest: /etc/NetworkManager/conf.d/10-globally-managed-devices.conf
+        owner: root
+        group: root
+        mode: "0644"
+        content: |
+          [ifupdown]
+          managed=true
+
+    - name: ターミナル関連ツール(tmux)を導入
+      ansible.builtin.apt:
+        name:
+          - tmux
+        state: present
+
+    - name: Chezmoiインストーラをダウンロード
+      ansible.builtin.get_url:
+        url: https://get.chezmoi.io
+        dest: /tmp/install-chezmoi.sh
+        mode: "0755"
+
+    - name: Chezmoiを導入
+      ansible.builtin.command:
+        cmd: sh /tmp/install-chezmoi.sh -b /usr/local/bin
+        creates: /usr/local/bin/chezmoi
+
+    - name: Dockerを導入
+      ansible.builtin.apt:
+        name: docker.io
+        state: present
+
+    - name: 対象ユーザーをdockerグループに追加
+      ansible.builtin.user:
+        name: "{{ target_user }}"
+        groups: docker
+        append: true
+
+    - name: Dockerのデータルートディレクトリを作成
+      ansible.builtin.file:
+        path: "{{ target_home }}/.docker-data"
+        state: directory
+        owner: root
+        group: root
+        mode: "0710"
+
+    - name: Dockerのデータルートを変更
+      ansible.builtin.copy:
+        dest: /etc/docker/daemon.json
+        owner: root
+        group: root
+        mode: "0644"
+        content: |
+          {
+            "data-root": "{{ target_home }}/.docker-data"
+          }
+
+    - name: 日本語・英語ロケールを生成
+      ansible.builtin.command: "locale-gen {{ item }}"
+      changed_when: false
+      loop:
+        - "{{ system_locale }}"
+        - "{{ extra_locale }}"
+
+    - name: システムのデフォルトロケールを英語に設定
+      ansible.builtin.command: "update-locale LANG={{ system_locale }}"
+      changed_when: false
+
+    - name: 日本語入力環境(fcitx5+mozc)を導入
+      ansible.builtin.apt:
+        name: "{{ fcitx_packages }}"
+        state: present
+
+    - name: Fcitx5用の環境変数を設定
+      ansible.builtin.copy:
+        dest: /etc/environment.d/90-fcitx5.conf
+        owner: root
+        group: root
+        mode: "0644"
+        content: |
+          GTK_IM_MODULE=fcitx
+          QT_IM_MODULE=fcitx
+          XMODIFIERS=@im=fcitx
+          SDL_IM_MODULE=fcitx
+
+    - name: CapsLock を Left Control として扱う (TTY用)
+      ansible.builtin.lineinfile:
+        path: /etc/default/keyboard
+        regexp: '^XKBOPTIONS='
+        line: 'XKBOPTIONS="ctrl:nocaps"'
+
+    - name: 絵文字フォント(Noto Color Emoji)を導入
+      ansible.builtin.apt:
+        name: fonts-noto-color-emoji
+        state: present
+
+    - name: Zip/unzipを導入
+      ansible.builtin.apt:
+        name:
+          - zip
+          - unzip
+        state: present
+
+    # --- GitHub API 依存タスク (CI環境でレートリミットに当たる場合はスキップ) ---
+    - name: IBM Plex Sans JPのリリース一覧を取得
+      ansible.builtin.uri:
+        url: "https://api.github.com/repos/IBM/plex/releases"
+        return_content: true
+        headers: "{{ {'Authorization': 'token ' + github_token} if github_token else {} }}"
+      register: plex_releases
+      when: test_github_api | bool
+
+    - name: IBM Plex Sans JPの最新リリースを特定
+      ansible.builtin.set_fact:
+        plex_sans_jp_release: >-
+          {{ plex_releases.json
+             | selectattr('tag_name', 'match', '^@ibm/plex-sans-jp@')
+             | list | first }}
+      when: test_github_api | bool
+
+    - name: IBM Plex Sans JPのダウンロードURLを特定
+      ansible.builtin.set_fact:
+        plex_sans_jp_asset_url: >-
+          {{ (plex_sans_jp_release.assets
+              | selectattr('name', 'search', 'OpenType')
+              | map(attribute='browser_download_url') | list
+              | first)
+             | default((plex_sans_jp_release.assets
+                         | map(attribute='browser_download_url') | list | first), true) }}
+      when: test_github_api | bool
+
+    - name: IBM Plex Sans JPをダウンロード
+      ansible.builtin.get_url:
+        url: "{{ plex_sans_jp_asset_url }}"
+        dest: /tmp/ibm-plex-sans-jp.zip
+        mode: "0644"
+      when: test_github_api | bool
+
+    - name: IBM Plex Sans JPの展開先ディレクトリを作成
+      ansible.builtin.file:
+        path: "{{ plex_sans_jp_install_dir }}"
+        state: directory
+        mode: "0755"
+
+    - name: IBM Plex Sans JPを展開
+      ansible.builtin.unarchive:
+        src: /tmp/ibm-plex-sans-jp.zip
+        dest: "{{ plex_sans_jp_install_dir }}"
+        remote_src: true
+      when: test_github_api | bool
+
+    - name: IBM Plex Monoの最新リリースを特定
+      ansible.builtin.set_fact:
+        plex_mono_release: >-
+          {{ plex_releases.json
+             | selectattr('tag_name', 'match', '^@ibm/plex-mono@')
+             | list | first }}
+      when: test_github_api | bool
+
+    - name: IBM Plex MonoのダウンロードURLを特定
+      ansible.builtin.set_fact:
+        plex_mono_asset_url: >-
+          {{ (plex_mono_release.assets
+              | selectattr('name', 'search', 'OpenType')
+              | map(attribute='browser_download_url') | list
+              | first)
+             | default((plex_mono_release.assets
+                         | map(attribute='browser_download_url') | list | first), true) }}
+      when: test_github_api | bool
+
+    - name: IBM Plex Monoをダウンロード
+      ansible.builtin.get_url:
+        url: "{{ plex_mono_asset_url }}"
+        dest: /tmp/ibm-plex-mono.zip
+        mode: "0644"
+      when: test_github_api | bool
+
+    - name: IBM Plex Monoの展開先ディレクトリを作成
+      ansible.builtin.file:
+        path: "{{ plex_mono_install_dir }}"
+        state: directory
+        mode: "0755"
+
+    - name: IBM Plex Monoを展開
+      ansible.builtin.unarchive:
+        src: /tmp/ibm-plex-mono.zip
+        dest: "{{ plex_mono_install_dir }}"
+        remote_src: true
+      when: test_github_api | bool
+
+    - name: フォントキャッシュを更新
+      ansible.builtin.command: fc-cache -f
+      changed_when: false
+
+    - name: 対象ユーザーの~/.configディレクトリを確認
+      ansible.builtin.file:
+        path: "{{ target_home }}/.config"
+        state: directory
+        owner: "{{ target_user }}"
+        group: "{{ target_user }}"
+        mode: "0755"
+
+    - name: 完了メッセージ
+      ansible.builtin.debug:
+        msg: "Molecule converge completed successfully."

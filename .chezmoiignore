@@ -7,6 +7,12 @@ ansible.deb.yaml
 # 将来 ansible/ 配下に role 等を増やしたとき用
 ansible
 
+# Molecule テスト（ansible.deb.yaml の統合テスト用）
+molecule
+
+# GitHub Actions ワークフロー
+.github
+
 # リポジトリの README を ~/README.md として配らない
 README.md
 

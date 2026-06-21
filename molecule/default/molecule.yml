@@ -1,0 +1,22 @@
+---
+driver:
+  name: docker
+platforms:
+  - name: debian13
+    image: molecule-debian13:latest
+    pre_build_image: true
+    privileged: true
+    command: /bin/bash
+    tty: true
+provisioner:
+  name: ansible
+  env:
+    ANSIBLE_VERBOSITY: "1"
+  inventory:
+    host_vars:
+      debian13:
+        target_user: testuser
+        target_home: /home/testuser
+        ansible_user: root
+verifier:
+  name: ansible

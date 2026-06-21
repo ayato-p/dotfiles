@@ -1,0 +1,51 @@
+---
+name: Test ansible.deb.yaml
+
+on:
+  pull_request:
+    paths:
+      - "ansible.deb.yaml"
+      - "molecule/**"
+      - ".github/workflows/test-ansible-deb.yml"
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install ansible-lint
+        run: pip install ansible ansible-lint
+
+      - name: Run syntax check
+        run: ansible-playbook --syntax-check ansible.deb.yaml
+
+      - name: Run ansible-lint
+        run: ansible-lint ansible.deb.yaml
+
+  molecule:
+    runs-on: ubuntu-latest
+    needs: lint
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: pip install ansible molecule molecule-plugins[docker]
+
+      - name: Build test image
+        run: docker build -t molecule-debian13:latest molecule/default/
+
+      - name: Run Molecule test
+        run: molecule test
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
