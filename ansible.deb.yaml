@@ -53,6 +53,7 @@
     default_fixed_font: "IBM Plex Mono,10,-1,5,50,0,0,0,0,0"
     default_small_font: "IBM Plex Sans JP,8,-1,5,50,0,0,0,0,0"
     plex_sans_jp_install_dir: "/usr/share/fonts/ibm-plex-sans-jp"
+    plex_mono_install_dir: "/usr/share/fonts/ibm-plex-mono"
     kde_packages:
       - kde-plasma-desktop
     fcitx_packages:
@@ -371,14 +372,10 @@
         name: fonts-noto-color-emoji
         state: present
 
-    - name: IBM Plexフォントを導入
-      # 通常のIBM Plex SansはCJKグリフを持たないため、日本語部分がNoto Sans CJK等に
-      # フォールバックしてデザインの一貫性が崩れる。そのため日本語対応版の
-      # IBM Plex Sans JP(下記タスクで別途取得)をメインフォントに採用している。
-      # ここで導入する fonts-ibm-plex はラテン文字用の補助。
-      ansible.builtin.apt:
-        name: fonts-ibm-plex
-        state: present
+    # IBM Plex Mono は KDE の等幅フォント設定(fixed)で使用。
+    # Debian の fonts-ibm-plex は contrib セクションにあり最小構成では有効でないため、
+    # IBM Plex Sans JP と同様に GitHub releases から取得する。
+    # Sans(プロポーショナル)は Plex Sans JP がラテン文字もカバーするため不要。
 
     - name: zip/unzipを導入
       ansible.builtin.apt:
@@ -428,6 +425,41 @@
       ansible.builtin.unarchive:
         src: /tmp/ibm-plex-sans-jp.zip
         dest: "{{ plex_sans_jp_install_dir }}"
+        remote_src: true
+
+    - name: IBM Plex Monoの最新リリースを特定
+      ansible.builtin.set_fact:
+        plex_mono_release: >-
+          {{ plex_releases.json
+             | selectattr('tag_name', 'match', '^@ibm/plex-mono@')
+             | list | first }}
+
+    - name: IBM Plex MonoのダウンロードURLを特定
+      ansible.builtin.set_fact:
+        plex_mono_asset_url: >-
+          {{ (plex_mono_release.assets
+              | selectattr('name', 'search', 'OpenType')
+              | map(attribute='browser_download_url') | list
+              | first)
+             | default((plex_mono_release.assets
+                         | map(attribute='browser_download_url') | list | first), true) }}
+
+    - name: IBM Plex Monoをダウンロード
+      ansible.builtin.get_url:
+        url: "{{ plex_mono_asset_url }}"
+        dest: /tmp/ibm-plex-mono.zip
+        mode: "0644"
+
+    - name: IBM Plex Monoの展開先ディレクトリを作成
+      ansible.builtin.file:
+        path: "{{ plex_mono_install_dir }}"
+        state: directory
+        mode: "0755"
+
+    - name: IBM Plex Monoを展開
+      ansible.builtin.unarchive:
+        src: /tmp/ibm-plex-mono.zip
+        dest: "{{ plex_mono_install_dir }}"
         remote_src: true
 
     - name: フォントキャッシュを更新
