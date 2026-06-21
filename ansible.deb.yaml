@@ -29,7 +29,8 @@
 #   READMEにも概要はあるが、詳しい理由はこちらが一次情報。
 #
 # 実行後:
-# 再起動してSDDMのログイン画面からPlasma(Wayland)セッションを選択する。
+# 再起動するとSDDM(kde-plasma-desktopのRecommendsで自動導入)のログイン画面が
+# 表示される。Plasma 6のデフォルトはWaylandセッション。
 # fcitx5の設定(入力切替キー等)は fcitx5-config-qt から個別に行う。
 
 - name: KDE Plasma (Wayland) 最小構成セットアップ (Debian 13)
@@ -292,38 +293,6 @@
         deb: https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
         state: present
 
-    - name: SDDMを導入
-      ansible.builtin.apt:
-        name: sddm
-        state: present
-      environment:
-        DEBIAN_FRONTEND: noninteractive
-
-    - name: SDDMをデフォルトディスプレイマネージャに設定
-      ansible.builtin.debconf:
-        name: sddm
-        question: shared/default-x-display-manager
-        value: sddm
-        vtype: select
-      notify: dpkg-reconfigure sddm
-
-    - name: SDDMでPlasma(Wayland)セッションをデフォルトに設定
-      # WaylandはKDE6系のデフォルト。GPUはIntel/AMD内蔵のみで特殊なドライバ事情が
-      # ないため、素直にデフォルトに乗る判断をしている(NVIDIA環境ならX11も検討)。
-      # [Autologin]はUser未指定のため自動ログイン自体は無効。セッションのデフォルトを
-      # Waylandにする目的のみで使っている。
-      ansible.builtin.copy:
-        dest: /etc/sddm.conf.d/10-wayland.conf
-        owner: root
-        group: root
-        mode: "0644"
-        content: |
-          [Autologin]
-          Session=plasmawayland
-
-          [General]
-          DisplayServer=wayland
-
     - name: グラフィカルターゲットをデフォルトに設定
       ansible.builtin.command: systemctl set-default graphical.target
       changed_when: false
@@ -531,7 +500,7 @@
     - name: 完了メッセージ
       ansible.builtin.debug:
         msg: >-
-          セットアップ完了。再起動するとSDDMからPlasma(Wayland)で
+          セットアップ完了。再起動するとPlasma(Wayland)で
           ログインできるはず。再起動後、fcitx5の設定(入力切替キー等)は
           fcitx5-config-qt から個別に行うこと。
           デフォルトフォントはIBM Plex Sans JP/Monoに設定済み(対象ユーザー:
@@ -544,9 +513,6 @@
       ansible.builtin.systemd:
         name: NetworkManager
         state: restarted
-
-    - name: dpkg-reconfigure sddm
-      ansible.builtin.command: dpkg-reconfigure -f noninteractive sddm
 
     - name: reconfigure keyboard
       ansible.builtin.command: dpkg-reconfigure -f noninteractive keyboard-configuration
